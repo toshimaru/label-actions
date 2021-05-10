@@ -8,6 +8,10 @@ incomplete:
       the issue in detail.
     close: true
 
+-incomplete:
+  prs:
+    reopen: true
+
 heated:
   prs:
     comment: >
