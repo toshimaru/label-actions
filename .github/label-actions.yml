@@ -13,5 +13,6 @@ heated:
     The thread has been temporarily locked.
     Please follow our community guidelines.
   lock: true
+
 -heated:
   unlock: true
