@@ -33,6 +33,7 @@ class App {
     const payload = github.context.payload;
 
     if (payload.sender.type === 'Bot') {
+      core.debug('bot');
       return;
     }
 
@@ -40,6 +41,7 @@ class App {
 
     const processOnly = this.config['process-only'];
     if (processOnly && processOnly !== threadType) {
+      core.debug('processOnly');
       return;
     }
 
@@ -49,6 +51,7 @@ class App {
       threadType
     );
     if (!actions) {
+      core.debug('not actions');
       return;
     }
 
@@ -62,6 +65,7 @@ class App {
       reason: threadData.active_lock_reason
     };
 
+    core.debug('running???');
     if (actions.comment) {
       core.debug('Commenting');
       await this.ensureUnlock(issue, lock, async () => {
