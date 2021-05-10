@@ -1,7 +1,7 @@
 # Configuration for Label Actions - https://github.com/dessant/label-actions
 
 incomplete:
-  issues:
+  prs:
     comment: >
       @{issue-author}, the issue does not contain enough information
       to reproduce the bug. Please open a new bug report and describe
@@ -9,10 +9,12 @@ incomplete:
     close: true
 
 heated:
-  comment: >
-    The thread has been temporarily locked.
-    Please follow our community guidelines.
-  lock: true
+  prs:
+    comment: >
+      The thread has been temporarily locked.
+      Please follow our community guidelines.
+    lock: true
 
 -heated:
-  unlock: true
+  prs:
+    unlock: true
