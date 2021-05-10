@@ -1,4 +1,4 @@
-name: 'Label Actions'
+name: 'My Label Actions'
 
 on:
   issues:

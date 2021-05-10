@@ -6,13 +6,16 @@ const {configSchema, actionSchema} = require('./schema');
 
 async function run() {
   try {
+    core.debug('getConfig');
     const config = getConfig();
     const client = github.getOctokit(config['github-token']);
 
+    core.debug('config-path');
     const actions = await getActionConfig(client, config['config-path']);
 
     const app = new App(config, client, actions);
 
+    core.debug('performActions');
     await app.performActions();
   } catch (err) {
     core.setFailed(err);
