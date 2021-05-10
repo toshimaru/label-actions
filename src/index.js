@@ -66,6 +66,8 @@ class App {
     };
 
     core.debug('running???');
+    core.debug(actions);
+    core.debug(actions.comment);
     if (actions.comment) {
       core.debug('Commenting');
       await this.ensureUnlock(issue, lock, async () => {
