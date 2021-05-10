@@ -28401,6 +28401,7 @@ class App {
 
     const actions = this.actions[label];
 
+    core.debug(this.actions)
     core.debug('=== target action? ===');
     core.debug(actions);
 
