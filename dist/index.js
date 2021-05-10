@@ -28399,6 +28399,9 @@ class App {
 
     const actions = this.actions[label];
 
+    core.debug('=== target action? ===');
+    core.debug(actions);
+
     if (actions) {
       const threadActions = actions[threadType];
       if (threadActions) {
