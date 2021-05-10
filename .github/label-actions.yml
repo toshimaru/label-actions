@@ -7,3 +7,11 @@ incomplete:
       to reproduce the bug. Please open a new bug report and describe
       the issue in detail.
     close: true
+
+heated:
+  comment: >
+    The thread has been temporarily locked.
+    Please follow our community guidelines.
+  lock: true
+-heated:
+  unlock: true
