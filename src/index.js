@@ -147,6 +147,10 @@ class App {
     }
     threadType = threadType === 'issue' ? 'issues' : 'prs';
 
+    core.debug(label);
+    core.debug(threadType);
+    core.debug(event);
+
     const actions = this.actions[label];
 
     if (actions) {
