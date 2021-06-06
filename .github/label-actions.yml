@@ -12,6 +12,14 @@ incomplete:
   prs:
     reopen: true
 
+'review request':
+  prs:
+    reviewers:
+      - x
+      - y
+      - z
+    number-of-reviwers: 1
+
 heated:
   prs:
     comment: >
