@@ -42,6 +42,8 @@ const actions = {
   ),
 
   reviewers: Joi.array(),
+  
+  'number-of-reviwer': Joi.number(),
 
   comment: Joi.alternatives().try(
     Joi.boolean().only(false),
