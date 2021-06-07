@@ -27959,6 +27959,8 @@ const actions = {
     Joi.string().trim().valid('resolved', 'off-topic', 'too heated', 'spam', '')
   ),
 
+  reviewers: Joi.array(),
+
   comment: Joi.alternatives().try(
     Joi.boolean().only(false),
     Joi.string().trim().valid(''),
@@ -28081,7 +28083,7 @@ module.exports = JSON.parse('[["0","\\u0000",128],["a1","｡",62],["8140","　�
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"_from":"joi@^17.4.0","_id":"joi@17.4.0","_inBundle":false,"_integrity":"sha512-F4WiW2xaV6wc1jxete70Rw4V/VuMd6IN+a5ilZsxG4uYtUXWu2kq9W5P2dz30e7Gmw8RCbY/u/uk+dMPma9tAg==","_location":"/joi","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"joi@^17.4.0","name":"joi","escapedName":"joi","rawSpec":"^17.4.0","saveSpec":null,"fetchSpec":"^17.4.0"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/joi/-/joi-17.4.0.tgz","_shasum":"b5c2277c8519e016316e49ababd41a1908d9ef20","_spec":"joi@^17.4.0","_where":"/media/s1/dev/pr/label-actions","browser":"dist/joi-browser.min.js","bugs":{"url":"https://github.com/sideway/joi/issues"},"bundleDependencies":false,"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.0","@sideway/formula":"^3.0.0","@sideway/pinpoint":"^2.0.0"},"deprecated":false,"description":"Object schema validation","devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"24.x.x","typescript":"4.0.x"},"files":["lib/**/*","dist/*"],"homepage":"https://github.com/sideway/joi#readme","keywords":["schema","validation"],"license":"BSD-3-Clause","main":"lib/index.js","name":"joi","repository":{"type":"git","url":"git://github.com/sideway/joi.git"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"types":"lib/index.d.ts","version":"17.4.0"}');
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.4.0","repository":"git://github.com/sideway/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.0","@sideway/formula":"^3.0.0","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"24.x.x","typescript":"4.0.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ }),
 
