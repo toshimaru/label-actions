@@ -73,6 +73,10 @@ class App {
       });
     }
 
+    if (actions.reviewers) {
+      console.log('== Reviewers ===');
+    }
+
     if (actions.label) {
       const currentLabels = threadData.labels.map(label => label.name);
       const newLabels = actions.label.filter(
