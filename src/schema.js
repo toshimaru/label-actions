@@ -43,7 +43,7 @@ const actions = {
 
   reviewers: Joi.array(),
   
-  'number-of-reviwer': Joi.number(),
+  'number-of-reviwers': Joi.number(),
 
   comment: Joi.alternatives().try(
     Joi.boolean().only(false),
@@ -83,6 +83,8 @@ const actionSchema = Joi.object()
       lock: actions.lock.default(false),
       unlock: actions.unlock.default(false),
       'lock-reason': actions['lock-reason'].default(''),
+      reviewers: actions.reviewers.default([]),
+      'number-of-reviwers': actions['number-of-reviwers'].default(0),
       comment: actions.comment.default(''),
       label: actions.label.default(''),
       unlabel: actions.unlabel.default(''),
