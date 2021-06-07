@@ -41,6 +41,8 @@ const actions = {
     Joi.string().trim().valid('resolved', 'off-topic', 'too heated', 'spam', '')
   ),
 
+  reviewers: Joi.array(),
+
   comment: Joi.alternatives().try(
     Joi.boolean().only(false),
     Joi.string().trim().valid(''),
