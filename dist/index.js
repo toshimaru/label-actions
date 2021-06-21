@@ -28501,6 +28501,7 @@ async function getActionConfig(client, configPath) {
 
   const {error, value} = actionSchema.validate(input, {abortEarly: false});
   if (error) {
+    console.log('error found!');
     throw error;
   }
 
