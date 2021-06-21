@@ -28461,10 +28461,15 @@ class App {
 
 function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(configSchema.describe().keys).map(item => [
-      item,
-      core.getInput(item)
-    ])
+    Object.keys(configSchema.describe().keys).map(item => {
+      console.log(item);
+      console.log(core.getInput(item));
+
+      [
+        item,
+        core.getInput(item)
+      ]
+    })
   );
 
   const {error, value} = configSchema.validate(input, {abortEarly: false});
