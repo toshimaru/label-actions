@@ -28327,6 +28327,7 @@ class App {
 
     if (actions.reviewers) {
       console.log('== Reviewers ===');
+      console.log(actions.reviewers);
     }
 
     if (actions.label) {
@@ -28445,6 +28446,16 @@ class App {
     } else {
       await action();
     }
+  }
+
+  async addReviewers(reviewers) {
+    const { owner, repo, number: pull_number } = this.context.issue
+    await this.client.pulls.createReviewRequest({
+      owner,
+      repo,
+      pull_number,
+      reviewers,
+    })
   }
 }
 
