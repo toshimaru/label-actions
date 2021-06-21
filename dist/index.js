@@ -28465,10 +28465,7 @@ function getConfig() {
       console.log(item);
       console.log(core.getInput(item));
 
-      [
-        item,
-        core.getInput(item)
-      ]
+      return [ item, core.getInput(item) ]
     })
   );
 
