@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const yaml = require('js-yaml');
+const _ = require('lodash');
 
 const {configSchema, actionSchema} = require('./schema');
 
@@ -76,6 +77,8 @@ class App {
     if (actions.reviewers) {
       console.log('== Reviewers ===');
       console.log(actions.reviewers);
+      reviewers = _.sampleSize(actions.reviewers, 2);
+      console.log(reviewers);
     }
 
     if (actions.label) {
@@ -210,9 +213,6 @@ class App {
 function getConfig() {
   const input = Object.fromEntries(
     Object.keys(configSchema.describe().keys).map(item => {
-      console.log(item);
-      console.log(core.getInput(item));
-
       return [ item, core.getInput(item) ]
     })
   );
@@ -249,7 +249,6 @@ async function getActionConfig(client, configPath) {
 
   const {error, value} = actionSchema.validate(input, {abortEarly: false});
   if (error) {
-    console.log('error found!');
     throw error;
   }
 
