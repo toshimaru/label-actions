@@ -77,7 +77,7 @@ class App {
     if (actions.reviewers) {
       console.log('== Reviewers ===');
       console.log(actions.reviewers);
-      reviewers = _.sampleSize(actions.reviewers, 2);
+      const reviewers = _.sampleSize(actions.reviewers, 2);
       console.log(reviewers);
     }
 
