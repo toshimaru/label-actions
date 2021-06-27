@@ -45683,7 +45683,10 @@ class App {
   async addReviewers(reviewers) {
     const { owner, repo, number: pull_number } = github.context.issue
     console.log(pull_number);
-    await this.client.issues.createReviewRequest({
+    console.log(this.client.pulls);
+    console.log(this.client.issues);
+
+    await this.client.pulls.createReviewRequest({
       owner,
       repo,
       pull_number,
