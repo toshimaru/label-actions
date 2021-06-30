@@ -84,7 +84,7 @@ const actionSchema = Joi.object()
       unlock: actions.unlock.default(false),
       'lock-reason': actions['lock-reason'].default(''),
       reviewers: actions.reviewers.default([]),
-      'number-of-reviewers': actions['number-of-reviewers'].default(0),
+      'number-of-reviewers': actions['number-of-reviewers'].default(1),
       comment: actions.comment.default(''),
       label: actions.label.default(''),
       unlabel: actions.unlabel.default(''),
