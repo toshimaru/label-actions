@@ -15,9 +15,7 @@ incomplete:
 'review request':
   prs:
     reviewers:
-      - x
-      - y
-      - z
+      - mpg-toshimaru-enomoto
     number-of-reviwers: 1
 
 heated:
