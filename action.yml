@@ -1,4 +1,4 @@
-name: 'Label Actions'
+name: 'Label to Actions'
 description: 'Perform actions when issues or pull requests are labeled or unlabeled'
 author: 'Armin Sebastian'
 inputs:
