@@ -10,4 +10,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/label-actions@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        uses: ./ # Uses an action in the root directory
