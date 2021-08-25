@@ -17101,7 +17101,7 @@ module.exports = Any.extend({
                         continue;
                     }
 
-                    if (schema.$_terms._inclusions.length &&
+                    if ((schema.$_terms._inclusions.length || schema.$_terms._requireds.length) &&
                         !isValid) {
 
                         if (stripUnknown) {
@@ -45304,7 +45304,7 @@ module.exports = JSON.parse('[["0","\\u0000",128],["a1","｡",62],["8140","　�
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.4.0","repository":"git://github.com/sideway/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.0","@sideway/formula":"^3.0.0","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"24.x.x","typescript":"4.0.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.4.2","repository":"git://github.com/sideway/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.0","@sideway/formula":"^3.0.0","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"24.x.x","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ }),
 
@@ -45571,10 +45571,10 @@ class App {
     }
 
     if (actions.reviewers) {
-      const author = threadData.user.login
-      let reviewers = _.without(actions.reviewers, author)
-      reviewers = _.sampleSize(actions.reviewers, actions['number-of-reviewers']);
-      this.addReviewers(reviewers)
+      const author = threadData.user.login;
+      let reviewers = _.without(actions.reviewers, author);
+      reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
+      this.addReviewers(reviewers);
     }
 
     if (actions.unlabel) {
@@ -45681,13 +45681,13 @@ class App {
   }
 
   async addReviewers(reviewers) {
-    const { owner, repo, number: pull_number } = github.context.issue
+    const {owner, repo, number: pull_number} = github.context.issue;
     await this.client.pulls.requestReviewers({
       owner,
       repo,
       pull_number,
-      reviewers,
-    })
+      reviewers
+    });
   }
 }
 
