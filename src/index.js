@@ -93,7 +93,7 @@ class App {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(
-        actions.reviewers,
+        reviewers,
         actions['number-of-reviewers']
       );
       this.addReviewers(reviewers);
