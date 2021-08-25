@@ -1,6 +1,6 @@
 {
   "name": "label-actions",
-  "version": "2.1.1",
+  "version": "1.0.2",
   "description": "A GitHub Action that performs actions when issues or pull requests are labeled or unlabeled.",
   "author": "Armin Sebastian",
   "license": "MIT",
@@ -15,6 +15,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist",
+    "lint": "prettier -c src",
     "update": "ncu --upgrade",
     "release": "standard-version",
     "push": "git push --tags origin master"

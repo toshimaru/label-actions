@@ -90,10 +90,13 @@ class App {
     }
 
     if (actions.reviewers) {
-      const author = threadData.user.login
-      let reviewers = _.without(actions.reviewers, author)
-      reviewers = _.sampleSize(actions.reviewers, actions['number-of-reviewers']);
-      this.addReviewers(reviewers)
+      const author = threadData.user.login;
+      let reviewers = _.without(actions.reviewers, author);
+      reviewers = _.sampleSize(
+        actions.reviewers,
+        actions['number-of-reviewers']
+      );
+      this.addReviewers(reviewers);
     }
 
     if (actions.unlabel) {
@@ -200,13 +203,13 @@ class App {
   }
 
   async addReviewers(reviewers) {
-    const { owner, repo, number: pull_number } = github.context.issue
+    const {owner, repo, number: pull_number} = github.context.issue;
     await this.client.pulls.requestReviewers({
       owner,
       repo,
       pull_number,
-      reviewers,
-    })
+      reviewers
+    });
   }
 }
 
