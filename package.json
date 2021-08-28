@@ -16,7 +16,6 @@
   "scripts": {
     "build": "ncc build src/index.js -o dist",
     "lint": "prettier -c src",
-    "update": "ncu --upgrade",
     "release": "standard-version",
     "push": "git push --tags origin master"
   },
@@ -29,7 +28,6 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.28.5",
-    "npm-check-updates": "^11.5.10",
     "prettier": "^2.3.2",
     "standard-version": "^9.3.1"
   },
