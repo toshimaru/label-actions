@@ -16,8 +16,7 @@
   "scripts": {
     "build": "ncc build src/index.js -o dist",
     "lint": "prettier -c src",
-    "release": "standard-version",
-    "push": "git push --tags origin master"
+    "release": "standard-version"
   },
   "dependencies": {
     "@actions/core": "^1.2.7",
