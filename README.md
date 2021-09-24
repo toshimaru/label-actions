@@ -1,21 +1,9 @@
+[![Build Script](https://github.com/toshimaru/label-actions/actions/workflows/build.yml/badge.svg)](https://github.com/toshimaru/label-actions/actions/workflows/build.yml)
+
 # Label Actions
 
 Label Actions is a GitHub bot that performs certain actions when issues
 or pull requests are labeled or unlabeled.
-
-> The legacy version of this project can be found
-> [here](https://github.com/dessant/label-actions-app).
-
-<img width="800" src="https://raw.githubusercontent.com/dessant/label-actions/master/assets/screenshot.png">
-
-## Supporting the Project
-
-The continued development of Label Actions is made possible
-thanks to the support of awesome backers. If you'd like to join them,
-please consider contributing with
-[Patreon](https://armin.dev/go/patreon?pr=label-actions&src=repo),
-[PayPal](https://armin.dev/go/paypal?pr=label-actions&src=repo) or
-[Bitcoin](https://armin.dev/go/bitcoin?pr=label-actions&src=repo).
 
 ## How It Works
 
@@ -30,6 +18,7 @@ must be configured. The following actions are supported:
 - Reopen threads
 - Lock threads with an optional lock reason
 - Unlock threads
+- Assign reviewers
 
 ## Usage
 
@@ -267,8 +256,6 @@ using the `github-token` input parameter.
 ```
 
 ## License
-
-Copyright (c) 2019-2021 Armin Sebastian
 
 This software is released under the terms of the MIT License.
 See the [LICENSE](LICENSE) file for further information.
