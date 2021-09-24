@@ -105,7 +105,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
 ```
 
 ### Available input parameters
@@ -114,24 +114,8 @@ This workflow declares all the available input parameters of the app
 and their default values. Any of the parameters can be omitted.
 
 ```yaml
-name: 'Label Actions'
-
-on:
-  issues:
-    types: [labeled, unlabeled]
-  pull_request:
-    types: [labeled, unlabeled]
-
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
-
-jobs:
-  job:
-    runs-on: ubuntu-latest
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
         with:
           github-token: ${{ github.token }}
           config-path: '.github/label-actions.yml'
@@ -145,7 +129,7 @@ This step will process label events only for issues.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
         with:
           process-only: 'issues'
 ```
@@ -155,7 +139,7 @@ This step will process label events only for pull requests.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions
         with:
           process-only: 'prs'
 ```
@@ -175,8 +159,6 @@ Labels and actions are specified in a configuration file.
 The following example showcases how desired actions may be declared:
 
 ```yaml
-# Configuration for Label Actions - https://github.com/dessant/label-actions
-
 # Actions taken when the `heated` label is added to issues or pull requests
 heated:
   # Post a comment
@@ -234,6 +216,16 @@ pizzazz:
   comment:
     - '![](https://i.imgur.com/WuduJNk.jpg)'
     - '![](https://i.imgur.com/1D8yxOo.gif)'
+
+# Actions taken when the `review wanted` label is added to pull requests
+'review wanted':
+  prs:
+    reviewers:
+      - user1
+      - user2
+      - user3
+      - user4
+    number-of-reviewers: 1
 ```
 
 ### Using a personal access token
@@ -250,7 +242,7 @@ using the `github-token` input parameter.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 ```
