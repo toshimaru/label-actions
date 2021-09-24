@@ -1,21 +1,9 @@
+[![Build Script](https://github.com/toshimaru/label-actions/actions/workflows/build.yml/badge.svg)](https://github.com/toshimaru/label-actions/actions/workflows/build.yml)
+
 # Label Actions
 
 Label Actions is a GitHub bot that performs certain actions when issues
 or pull requests are labeled or unlabeled.
-
-> The legacy version of this project can be found
-> [here](https://github.com/dessant/label-actions-app).
-
-<img width="800" src="https://raw.githubusercontent.com/dessant/label-actions/master/assets/screenshot.png">
-
-## Supporting the Project
-
-The continued development of Label Actions is made possible
-thanks to the support of awesome backers. If you'd like to join them,
-please consider contributing with
-[Patreon](https://armin.dev/go/patreon?pr=label-actions&src=repo),
-[PayPal](https://armin.dev/go/paypal?pr=label-actions&src=repo) or
-[Bitcoin](https://armin.dev/go/bitcoin?pr=label-actions&src=repo).
 
 ## How It Works
 
@@ -30,6 +18,7 @@ must be configured. The following actions are supported:
 - Reopen threads
 - Lock threads with an optional lock reason
 - Unlock threads
+- Assign reviewers
 
 ## Usage
 
@@ -116,7 +105,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
 ```
 
 ### Available input parameters
@@ -125,24 +114,8 @@ This workflow declares all the available input parameters of the app
 and their default values. Any of the parameters can be omitted.
 
 ```yaml
-name: 'Label Actions'
-
-on:
-  issues:
-    types: [labeled, unlabeled]
-  pull_request:
-    types: [labeled, unlabeled]
-
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
-
-jobs:
-  job:
-    runs-on: ubuntu-latest
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
         with:
           github-token: ${{ github.token }}
           config-path: '.github/label-actions.yml'
@@ -156,7 +129,7 @@ This step will process label events only for issues.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions@v1.0.4
         with:
           process-only: 'issues'
 ```
@@ -166,7 +139,7 @@ This step will process label events only for pull requests.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions
         with:
           process-only: 'prs'
 ```
@@ -186,8 +159,6 @@ Labels and actions are specified in a configuration file.
 The following example showcases how desired actions may be declared:
 
 ```yaml
-# Configuration for Label Actions - https://github.com/dessant/label-actions
-
 # Actions taken when the `heated` label is added to issues or pull requests
 heated:
   # Post a comment
@@ -245,6 +216,16 @@ pizzazz:
   comment:
     - '![](https://i.imgur.com/WuduJNk.jpg)'
     - '![](https://i.imgur.com/1D8yxOo.gif)'
+
+# Actions taken when the `review wanted` label is added to pull requests
+'review wanted':
+  prs:
+    reviewers:
+      - user1
+      - user2
+      - user3
+      - user4
+    number-of-reviewers: 1
 ```
 
 ### Using a personal access token
@@ -261,14 +242,12 @@ using the `github-token` input parameter.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: toshimaru/label-actions
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 ```
 
 ## License
-
-Copyright (c) 2019-2021 Armin Sebastian
 
 This software is released under the terms of the MIT License.
 See the [LICENSE](LICENSE) file for further information.
