@@ -115,7 +115,7 @@ and their default values. Any of the parameters can be omitted.
 
 ```yaml
     steps:
-      - uses: toshimaru/label-actions@v1.0.4
+      - uses: toshimaru/label-actions
         with:
           github-token: ${{ github.token }}
           config-path: '.github/label-actions.yml'
@@ -129,7 +129,7 @@ This step will process label events only for issues.
 <!-- prettier-ignore -->
 ```yaml
     steps:
-      - uses: toshimaru/label-actions@v1.0.4
+      - uses: toshimaru/label-actions
         with:
           process-only: 'issues'
 ```
