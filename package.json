@@ -4,13 +4,13 @@
   "description": "A GitHub Action that performs actions when issues or pull requests are labeled or unlabeled.",
   "author": "Armin Sebastian",
   "license": "MIT",
-  "homepage": "https://github.com/dessant/label-actions",
+  "homepage": "https://github.com/toshimaru/label-actions",
   "repository": {
-    "url": "https://github.com/dessant/label-actions.git",
+    "url": "https://github.com/toshimaru/label-actions.git",
     "type": "git"
   },
   "bugs": {
-    "url": "https://github.com/dessant/label-actions/issues"
+    "url": "https://github.com/toshimaru/label-actions/issues"
   },
   "main": "src/index.js",
   "scripts": {
