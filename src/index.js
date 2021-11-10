@@ -30,9 +30,9 @@ class App {
   async performActions() {
     const payload = github.context.payload;
 
-    if (payload.sender.type === 'Bot') {
-      return;
-    }
+    // if (payload.sender.type === 'Bot') {
+    //   return;
+    // }
 
     const threadType = payload.issue ? 'issue' : 'pr';
 
