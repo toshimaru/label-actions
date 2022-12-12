@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.31.1",
-    "prettier": "^2.5.1",
+    "prettier": "^2.8.1",
     "standard-version": "^9.3.2"
   },
   "engines": {
