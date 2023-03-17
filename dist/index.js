@@ -27,7 +27,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.issue = exports.issueCommand = void 0;
-const os = __importStar(__nccwpck_require__(2087));
+const os = __importStar(__nccwpck_require__(2037));
 const utils_1 = __nccwpck_require__(5278);
 /**
  * Commands
@@ -138,8 +138,8 @@ exports.getIDToken = exports.getState = exports.saveState = exports.group = expo
 const command_1 = __nccwpck_require__(7351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
-const os = __importStar(__nccwpck_require__(2087));
-const path = __importStar(__nccwpck_require__(5622));
+const os = __importStar(__nccwpck_require__(2037));
+const path = __importStar(__nccwpck_require__(1017));
 const oidc_utils_1 = __nccwpck_require__(8041);
 /**
  * The code to exit an action
@@ -448,8 +448,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.issueCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs = __importStar(__nccwpck_require__(5747));
-const os = __importStar(__nccwpck_require__(2087));
+const fs = __importStar(__nccwpck_require__(7147));
+const os = __importStar(__nccwpck_require__(2037));
 const utils_1 = __nccwpck_require__(5278);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
@@ -606,8 +606,8 @@ exports.toCommandProperties = toCommandProperties;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
-const fs_1 = __nccwpck_require__(5747);
-const os_1 = __nccwpck_require__(2087);
+const fs_1 = __nccwpck_require__(7147);
+const os_1 = __nccwpck_require__(2037);
 class Context {
     /**
      * Hydrate the context from the environment
@@ -882,8 +882,8 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const http = __nccwpck_require__(8605);
-const https = __nccwpck_require__(7211);
+const http = __nccwpck_require__(3685);
+const https = __nccwpck_require__(5687);
 const pm = __nccwpck_require__(6443);
 let tunnel;
 var HttpCodes;
@@ -5169,7 +5169,7 @@ exports.request = request;
 "use strict";
 
 
-const Url = __nccwpck_require__(8835);
+const Url = __nccwpck_require__(7310);
 
 const Errors = __nccwpck_require__(1594);
 
@@ -5177,7 +5177,7 @@ const Errors = __nccwpck_require__(1594);
 const internals = {
     minDomainSegments: 2,
     nonAsciiRx: /[^\x00-\x7f]/,
-    domainControlRx: /[\x00-\x20@\:\/]/,                                                // Control + space + separators
+    domainControlRx: /[\x00-\x20@\:\/\\#!\$&\'\(\)\*\+,;=\?]/,                          // Control + space + separators
     tldSegmentRx: /^[a-zA-Z](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?$/,
     domainSegmentRx: /^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?$/,
     URL: Url.URL || URL                                                                 // $lab:coverage:ignore$
@@ -5186,12 +5186,12 @@ const internals = {
 
 exports.analyze = function (domain, options = {}) {
 
-    if (typeof domain !== 'string') {
-        throw new Error('Invalid input: domain must be a string');
+    if (!domain) {                                                                      // Catch null / undefined
+        return Errors.code('DOMAIN_NON_EMPTY_STRING');
     }
 
-    if (!domain) {
-        return Errors.code('DOMAIN_NON_EMPTY_STRING');
+    if (typeof domain !== 'string') {
+        throw new Error('Invalid input: domain must be a string');
     }
 
     if (domain.length > 256) {
@@ -5214,6 +5214,12 @@ exports.analyze = function (domain, options = {}) {
     domain = internals.punycode(domain);
 
     // https://tools.ietf.org/html/rfc1035 section 2.3.1
+
+    if (options.allowFullyQualified &&
+        domain[domain.length - 1] === '.') {
+
+        domain = domain.slice(0, -1);
+    }
 
     const minDomainSegments = options.minDomainSegments || internals.minDomainSegments;
 
@@ -5273,6 +5279,10 @@ exports.isValid = function (domain, options) {
 
 internals.punycode = function (domain) {
 
+    if (domain.includes('%')) {
+        domain = domain.replace(/%/g, '%25');
+    }
+
     try {
         return new internals.URL(`http://${domain}`).host;
     }
@@ -5290,7 +5300,7 @@ internals.punycode = function (domain) {
 "use strict";
 
 
-const Util = __nccwpck_require__(1669);
+const Util = __nccwpck_require__(3837);
 
 const Domain = __nccwpck_require__(7425);
 const Errors = __nccwpck_require__(1594);
@@ -7283,7 +7293,7 @@ internals.createRegex = function (options) {
 
 internals.wrap = function (raw, scheme) {
 
-    raw = `(?=.)(?!https?\:/$)${raw}`;              // Require at least one character and explicitly forbid 'http:/'
+    raw = `(?=.)(?!https?\:/(?:$|[^/]))(?!https?\:///)(?!https?\:[^/])${raw}`;     // Require at least one character and explicitly forbid 'http:/' or HTTP with empty domain
 
     return {
         raw,
@@ -7332,7 +7342,7 @@ const internals = {
         '[': ']'
     },
 
-    numberRx: /^(?:[0-9]*\.?[0-9]*){1}$/,
+    numberRx: /^(?:[0-9]*(\.[0-9]*)?){1}$/,
     tokenRx: /^[\w\$\#\.\@\:\{\}]+$/,
 
     symbol: Symbol('formula'),
@@ -8834,10 +8844,6 @@ internals.Base = class {
 
             for (const key in args) {
                 let arg = args[key];
-                if (arg === undefined) {
-                    delete args[key];
-                    continue;
-                }
 
                 if (definition.argsByName) {
                     const resolver = definition.argsByName.get(key);
@@ -8859,6 +8865,11 @@ internals.Base = class {
                             Assert(!error, error, 'or reference');
                         }
                     }
+                }
+
+                if (arg === undefined) {
+                    delete args[key];
+                    continue;
                 }
 
                 args[key] = arg;
@@ -9476,7 +9487,7 @@ internals.List = class {
 const Assert = __nccwpck_require__(2718);
 const AssertError = __nccwpck_require__(5563);
 
-const Pkg = __nccwpck_require__(6741);
+const Pkg = __nccwpck_require__(7045);
 
 let Messages;
 let Schemas;
@@ -9567,7 +9578,7 @@ exports.compare = function (a, b, operator) {
 };
 
 
-exports.default = function (value, defaultValue) {
+exports["default"] = function (value, defaultValue) {
 
     return value === undefined ? defaultValue : value;
 };
@@ -10119,10 +10130,19 @@ exports.template = function (value, messages, code, state, prefs) {
     }
 
     if (lang &&
-        messages[lang] &&
-        messages[lang][code] !== undefined) {
+        messages[lang]) {
 
-        return messages[lang][code];
+        if (messages[lang][code] !== undefined) {
+            return messages[lang][code];
+        }
+
+        if (messages[lang]['*'] !== undefined) {
+            return messages[lang]['*'];
+        }
+    }
+
+    if (!messages[code]) {
+        return messages['*'];
     }
 
     return messages[code];
@@ -10799,7 +10819,7 @@ internals.methods = {
 internals.assert = function (value, schema, annotate, args /* [message], [options] */) {
 
     const message = args[0] instanceof Error || typeof args[0] === 'string' ? args[0] : null;
-    const options = message ? args[1] : args[0];
+    const options = message !== null ? args[1] : args[0];
     const result = schema.validate(value, Common.preferences({ errors: { stack: true } }, options || {}));
 
     let error = result.error;
@@ -11434,7 +11454,7 @@ exports.decompile = function (messages) {
         const message = messages[code];
 
         if (code === 'root') {
-            target[code] = message;
+            target.root = message;
             continue;
         }
 
@@ -11452,7 +11472,7 @@ exports.decompile = function (messages) {
             const localized = message[code];
 
             if (code === 'root') {
-                target[language][code] = localized;
+                target[language].root = localized;
                 continue;
             }
 
@@ -11889,7 +11909,7 @@ exports.create = function (key, options = {}) {
 };
 
 
-exports.in = function (key, options = {}) {
+exports["in"] = function (key, options = {}) {
 
     return exports.create(key, { ...options, in: true });
 };
@@ -12270,7 +12290,8 @@ exports.preferences = Joi.object({
         stack: Joi.boolean(),
         wrap: {
             label: internals.wrap,
-            array: internals.wrap
+            array: internals.wrap,
+            string: internals.wrap
         }
     },
     externals: Joi.boolean(),
@@ -13012,9 +13033,10 @@ internals.wrap = function (value, ends) {
 };
 
 
-internals.stringify = function (value, original, state, prefs, local, options) {
+internals.stringify = function (value, original, state, prefs, local, options = {}) {
 
     const type = typeof value;
+    const wrap = prefs && prefs.errors && prefs.errors.wrap || {};
 
     let skipWrap = false;
     if (Ref.isRef(value) &&
@@ -13029,7 +13051,7 @@ internals.stringify = function (value, original, state, prefs, local, options) {
     }
 
     if (type === 'string') {
-        return value;
+        return internals.wrap(value, options.arrayItems && wrap.string);
     }
 
     if (type === 'number' ||
@@ -13060,16 +13082,12 @@ internals.stringify = function (value, original, state, prefs, local, options) {
         return value.toString();
     }
 
-    let partial = '';
+    const values = [];
     for (const item of value) {
-        partial = partial + (partial.length ? ', ' : '') + internals.stringify(item, original, state, prefs, local, options);
+        values.push(internals.stringify(item, original, state, prefs, local, { arrayItems: true, ...options }));
     }
 
-    if (skipWrap) {
-        return partial;
-    }
-
-    return internals.wrap(partial, prefs.errors.wrap.array);
+    return internals.wrap(values.join(', '), !skipWrap && wrap.array);
 };
 
 
@@ -13091,6 +13109,23 @@ internals.functions = {
     if(condition, then, otherwise) {
 
         return condition ? then : otherwise;
+    },
+
+    length(item) {
+
+        if (typeof item === 'string') {
+            return item.length;
+        }
+
+        if (!item || typeof item !== 'object') {
+            return null;
+        }
+
+        if (Array.isArray(item)) {
+            return item.length;
+        }
+
+        return Object.keys(item).length;
     },
 
     msg(code) {
@@ -13540,6 +13575,7 @@ module.exports = Any.extend({
 
         if (schema._flags.match) {
             const matched = [];
+            const failed = [];
 
             for (let i = 0; i < schema.$_terms.matches.length; ++i) {
                 const item = schema.$_terms.matches[i];
@@ -13551,24 +13587,45 @@ module.exports = Any.extend({
                     matched.push(result.value);
                 }
                 else {
+                    failed.push(result.errors);
                     localState.restore();
                 }
             }
 
             if (matched.length === 0) {
-                return { errors: error('alternatives.any') };
+                const context = {
+                    details: failed.map((f) => Errors.details(f, { override: false }))
+                };
+
+                return { errors: error('alternatives.any', context) };
             }
+
+            // Match one
 
             if (schema._flags.match === 'one') {
                 return matched.length === 1 ? { value: matched[0] } : { errors: error('alternatives.one') };
             }
 
+            // Match all
+
             if (matched.length !== schema.$_terms.matches.length) {
-                return { errors: error('alternatives.all') };
+                const context = {
+                    details: failed.map((f) => Errors.details(f, { override: false }))
+                };
+
+                return { errors: error('alternatives.all', context) };
             }
 
-            const allobj = schema.$_terms.matches.reduce((acc, v) => acc && v.schema.type === 'object', true);
-            return allobj ? { value: matched.reduce((acc, v) => Merge(acc, v, { mergeArrays: false })) } : { value: matched[matched.length - 1] };
+            const isAnyObj = (alternative) => {
+
+                return alternative.$_terms.matches.some((v) => {
+
+                    return v.schema.type === 'object' ||
+                        (v.schema.type === 'alternatives' && isAnyObj(v.schema));
+                });
+            };
+
+            return isAnyObj(schema) ? { value: matched.reduce((acc, v) => Merge(acc, v, { mergeArrays: false })) } : { value: matched[matched.length - 1] };
         }
 
         // Match any
@@ -15581,8 +15638,10 @@ module.exports = Any.extend({
 
         if (schema.$_terms.dependencies) {
             for (const dep of schema.$_terms.dependencies) {
-                if (dep.key &&
-                    dep.key.resolve(value, state, prefs, null, { shadow: false }) === undefined) {
+                if (
+                    dep.key !== null &&
+                    internals.isPresent(dep.options)(dep.key.resolve(value, state, prefs, null, { shadow: false })) === false
+                ) {
 
                     continue;
                 }
@@ -16032,7 +16091,7 @@ internals.dependency = function (schema, rel, key, peers, options) {
         options = peers.length > 1 && typeof peers[peers.length - 1] === 'object' ? peers.pop() : {};
     }
 
-    Common.assertOptions(options, ['separator']);
+    Common.assertOptions(options, ['separator', 'isPresent']);
 
     peers = [].concat(peers);
 
@@ -16055,7 +16114,7 @@ internals.dependency = function (schema, rel, key, peers, options) {
 
     const obj = schema.clone();
     obj.$_terms.dependencies = obj.$_terms.dependencies || [];
-    obj.$_terms.dependencies.push(new internals.Dependency(rel, key, paths, peers));
+    obj.$_terms.dependencies.push(new internals.Dependency(rel, key, paths, peers, options));
     return obj;
 };
 
@@ -16067,8 +16126,9 @@ internals.dependencies = {
         const missing = [];
         const present = [];
         const count = dep.peers.length;
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) === undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false })) === false) {
                 missing.push(peer.key);
             }
             else {
@@ -16094,8 +16154,9 @@ internals.dependencies = {
     nand(schema, dep, value, state, prefs) {
 
         const present = [];
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) !== undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false }))) {
                 present.push(peer.key);
             }
         }
@@ -16119,8 +16180,9 @@ internals.dependencies = {
 
     or(schema, dep, value, state, prefs) {
 
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) !== undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false }))) {
                 return;
             }
         }
@@ -16137,8 +16199,9 @@ internals.dependencies = {
     oxor(schema, dep, value, state, prefs) {
 
         const present = [];
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) !== undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false }))) {
                 present.push(peer.key);
             }
         }
@@ -16157,8 +16220,9 @@ internals.dependencies = {
 
     with(schema, dep, value, state, prefs) {
 
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) === undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false })) === false) {
                 return {
                     code: 'object.with',
                     context: {
@@ -16174,8 +16238,9 @@ internals.dependencies = {
 
     without(schema, dep, value, state, prefs) {
 
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) !== undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false }))) {
                 return {
                     code: 'object.without',
                     context: {
@@ -16192,8 +16257,9 @@ internals.dependencies = {
     xor(schema, dep, value, state, prefs) {
 
         const present = [];
+        const isPresent = internals.isPresent(dep.options);
         for (const peer of dep.peers) {
-            if (peer.resolve(value, state, prefs, null, { shadow: false }) !== undefined) {
+            if (isPresent(peer.resolve(value, state, prefs, null, { shadow: false }))) {
                 present.push(peer.key);
             }
         }
@@ -16221,6 +16287,12 @@ internals.keysToLabels = function (schema, keys) {
     }
 
     return schema.$_mapLabels(keys);
+};
+
+
+internals.isPresent = function (options) {
+
+    return typeof options.isPresent === 'function' ? options.isPresent : (resolved) => resolved !== undefined;
 };
 
 
@@ -16429,12 +16501,13 @@ internals.unknown = function (schema, value, unprocessed, errors, state, prefs) 
 
 internals.Dependency = class {
 
-    constructor(rel, key, peers, paths) {
+    constructor(rel, key, peers, paths, options) {
 
         this.rel = rel;
         this.key = key;
         this.peers = peers;
         this.paths = paths;
+        this.options = options;
     }
 
     describe() {
@@ -16449,7 +16522,11 @@ internals.Dependency = class {
         }
 
         if (this.peers[0].separator !== '.') {
-            desc.options = { separator: this.peers[0].separator };
+            desc.options = { ...desc.options, separator: this.peers[0].separator };
+        }
+
+        if (this.options.isPresent) {
+            desc.options = { ...desc.options, isPresent: this.options.isPresent };
         }
 
         return desc;
@@ -16676,7 +16753,11 @@ const Common = __nccwpck_require__(2448);
 
 const internals = {
     numberRx: /^\s*[+-]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e([+-]?\d+))?\s*$/i,
-    precisionRx: /(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/
+    precisionRx: /(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/,
+    exponentialPartRegex: /[eE][+-]?\d+$/,
+    leadingSignAndZerosRegex: /^[+-]?(0*)?/,
+    dotRegex: /\./,
+    trailingZerosRegex: /0+$/
 };
 
 
@@ -16707,8 +16788,7 @@ module.exports = Any.extend({
 
             if (!schema._flags.unsafe) {
                 if (value.match(/e/i)) {
-                    const constructed = internals.normalizeExponent(`${result.value / Math.pow(10, matches[1])}e${matches[1]}`);
-                    if (constructed !== internals.normalizeExponent(value)) {
+                    if (internals.extractSignificantDigits(value) !== internals.extractSignificantDigits(String(result.value))) {
                         result.errors = error('number.unsafe');
                         return result;
                     }
@@ -16837,7 +16917,7 @@ module.exports = Any.extend({
             },
             validate(value, helpers, { base }, options) {
 
-                if (value % base === 0) {
+                if (value * (1 / base) % 1 === 0) {
                     return value;
                 }
 
@@ -16965,15 +17045,13 @@ module.exports = Any.extend({
 
 // Helpers
 
-internals.normalizeExponent = function (str) {
+internals.extractSignificantDigits = function (value) {
 
-    return str
-        .replace(/E/, 'e')
-        .replace(/\.(\d*[1-9])?0+e/, '.$1e')
-        .replace(/\.e/, 'e')
-        .replace(/e\+/, 'e')
-        .replace(/^\+/, '')
-        .replace(/^(-?)0+([1-9])/, '$1$2');
+    return value
+        .replace(internals.exponentialPartRegex, '')
+        .replace(internals.dotRegex, '')
+        .replace(internals.trailingZerosRegex, '')
+        .replace(internals.leadingSignAndZerosRegex, '');
 };
 
 
@@ -17069,7 +17147,7 @@ const internals = {
     },
     dataUriRegex: /^data:[\w+.-]+\/[\w+.-]+;((charset=[\w-]+|base64),)?(.*)$/,
     hexRegex: /^[a-f0-9]+$/i,
-    ipRegex: Ip.regex().regex,
+    ipRegex: Ip.regex({ cidr: 'forbidden' }).regex,
     isoDurationRegex: /^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/,
 
     guidBrackets: {
@@ -17164,13 +17242,20 @@ module.exports = Any.extend({
         }
     },
 
-    validate(value, { error }) {
+    validate(value, { schema, error }) {
 
         if (typeof value !== 'string') {
             return { value, errors: error('string.base') };
         }
 
         if (value === '') {
+            const min = schema.$_getRule('min');
+            if (min &&
+                min.args.limit === 0) {
+
+                return;
+            }
+
             return { value, errors: error('string.empty') };
         }
     },
@@ -17298,7 +17383,7 @@ module.exports = Any.extend({
             method(options) {
 
                 if (options) {
-                    Common.assertOptions(options, ['allowUnicode', 'maxDomainSegments', 'minDomainSegments', 'tlds']);
+                    Common.assertOptions(options, ['allowFullyQualified', 'allowUnicode', 'maxDomainSegments', 'minDomainSegments', 'tlds']);
                 }
 
                 const address = internals.addressOptions(options);
@@ -17317,7 +17402,7 @@ module.exports = Any.extend({
         email: {
             method(options = {}) {
 
-                Common.assertOptions(options, ['allowUnicode', 'ignoreLength', 'maxDomainSegments', 'minDomainSegments', 'multiple', 'separator', 'tlds']);
+                Common.assertOptions(options, ['allowFullyQualified', 'allowUnicode', 'ignoreLength', 'maxDomainSegments', 'minDomainSegments', 'multiple', 'separator', 'tlds']);
                 Assert(options.multiple === undefined || typeof options.multiple === 'boolean', 'multiple option must be an boolean');
 
                 const address = internals.addressOptions(options);
@@ -17673,7 +17758,7 @@ module.exports = Any.extend({
                 Common.assertOptions(options, ['allowRelative', 'allowQuerySquareBrackets', 'domain', 'relativeOnly', 'scheme']);
 
                 if (options.domain) {
-                    Common.assertOptions(options.domain, ['allowUnicode', 'maxDomainSegments', 'minDomainSegments', 'tlds']);
+                    Common.assertOptions(options.domain, ['allowFullyQualified', 'allowUnicode', 'maxDomainSegments', 'minDomainSegments', 'tlds']);
                 }
 
                 const { regex, scheme } = Uri.regex(options);
@@ -18074,7 +18159,10 @@ exports.entryAsync = async function (value, schema, prefs) {
                 }
             }
             catch (err) {
-                err.message += ` (${label})`;       // Change message to include path
+                if (settings.errors.label) {
+                    err.message += ` (${label})`;       // Change message to include path
+                }
+
                 throw err;
             }
         }
@@ -21958,7 +22046,7 @@ module.exports = __nccwpck_require__(1035);
 
 
 
-module.exports = __nccwpck_require__(2011).extend({
+module.exports = (__nccwpck_require__(2011).extend)({
   implicit: [
     __nccwpck_require__(9212),
     __nccwpck_require__(6104)
@@ -22014,7 +22102,7 @@ module.exports = new Schema({
 
 
 
-module.exports = __nccwpck_require__(8562).extend({
+module.exports = (__nccwpck_require__(8562).extend)({
   implicit: [
     __nccwpck_require__(721),
     __nccwpck_require__(4993),
@@ -40238,11 +40326,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Stream = _interopDefault(__nccwpck_require__(2413));
-var http = _interopDefault(__nccwpck_require__(8605));
-var Url = _interopDefault(__nccwpck_require__(8835));
-var https = _interopDefault(__nccwpck_require__(7211));
-var zlib = _interopDefault(__nccwpck_require__(8761));
+var Stream = _interopDefault(__nccwpck_require__(2781));
+var http = _interopDefault(__nccwpck_require__(3685));
+var Url = _interopDefault(__nccwpck_require__(7310));
+var https = _interopDefault(__nccwpck_require__(5687));
+var zlib = _interopDefault(__nccwpck_require__(9796));
 
 // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
@@ -40393,7 +40481,7 @@ FetchError.prototype.name = 'FetchError';
 
 let convert;
 try {
-	convert = __nccwpck_require__(2877).convert;
+	convert = (__nccwpck_require__(2877).convert);
 } catch (e) {}
 
 const INTERNALS = Symbol('Body internals');
@@ -41876,7 +41964,7 @@ fetch.Promise = global.Promise;
 
 module.exports = exports = fetch;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = exports;
+exports["default"] = exports;
 exports.Headers = Headers;
 exports.Request = Request;
 exports.Response = Response;
@@ -41948,13 +42036,13 @@ module.exports = __nccwpck_require__(4219);
 "use strict";
 
 
-var net = __nccwpck_require__(1631);
-var tls = __nccwpck_require__(4016);
-var http = __nccwpck_require__(8605);
-var https = __nccwpck_require__(7211);
-var events = __nccwpck_require__(8614);
-var assert = __nccwpck_require__(2357);
-var util = __nccwpck_require__(1669);
+var net = __nccwpck_require__(1808);
+var tls = __nccwpck_require__(4404);
+var http = __nccwpck_require__(3685);
+var https = __nccwpck_require__(5687);
+var events = __nccwpck_require__(2361);
+var assert = __nccwpck_require__(9491);
+var util = __nccwpck_require__(3837);
 
 
 exports.httpOverHttp = httpOverHttp;
@@ -42394,15 +42482,7 @@ module.exports = eval("require")("encoding");
 
 /***/ }),
 
-/***/ 6741:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.4.2","repository":"git://github.com/sideway/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.0","@sideway/formula":"^3.0.0","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"24.x.x","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
-
-/***/ }),
-
-/***/ 2357:
+/***/ 9491:
 /***/ ((module) => {
 
 "use strict";
@@ -42410,7 +42490,7 @@ module.exports = require("assert");
 
 /***/ }),
 
-/***/ 8614:
+/***/ 2361:
 /***/ ((module) => {
 
 "use strict";
@@ -42418,7 +42498,7 @@ module.exports = require("events");
 
 /***/ }),
 
-/***/ 5747:
+/***/ 7147:
 /***/ ((module) => {
 
 "use strict";
@@ -42426,7 +42506,7 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ 8605:
+/***/ 3685:
 /***/ ((module) => {
 
 "use strict";
@@ -42434,7 +42514,7 @@ module.exports = require("http");
 
 /***/ }),
 
-/***/ 7211:
+/***/ 5687:
 /***/ ((module) => {
 
 "use strict";
@@ -42442,7 +42522,7 @@ module.exports = require("https");
 
 /***/ }),
 
-/***/ 1631:
+/***/ 1808:
 /***/ ((module) => {
 
 "use strict";
@@ -42450,7 +42530,7 @@ module.exports = require("net");
 
 /***/ }),
 
-/***/ 2087:
+/***/ 2037:
 /***/ ((module) => {
 
 "use strict";
@@ -42458,7 +42538,7 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 5622:
+/***/ 1017:
 /***/ ((module) => {
 
 "use strict";
@@ -42466,7 +42546,7 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ 2413:
+/***/ 2781:
 /***/ ((module) => {
 
 "use strict";
@@ -42474,7 +42554,7 @@ module.exports = require("stream");
 
 /***/ }),
 
-/***/ 4016:
+/***/ 4404:
 /***/ ((module) => {
 
 "use strict";
@@ -42482,7 +42562,7 @@ module.exports = require("tls");
 
 /***/ }),
 
-/***/ 8835:
+/***/ 7310:
 /***/ ((module) => {
 
 "use strict";
@@ -42490,7 +42570,7 @@ module.exports = require("url");
 
 /***/ }),
 
-/***/ 1669:
+/***/ 3837:
 /***/ ((module) => {
 
 "use strict";
@@ -42498,11 +42578,19 @@ module.exports = require("util");
 
 /***/ }),
 
-/***/ 8761:
+/***/ 9796:
 /***/ ((module) => {
 
 "use strict";
 module.exports = require("zlib");
+
+/***/ }),
+
+/***/ 7045:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.8.3","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ })
 
