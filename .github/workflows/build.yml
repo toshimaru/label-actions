@@ -14,7 +14,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-      # There's a diff between local and CI. Temporary comment-out.
-      # https://github.com/toshimaru/label-actions/pull/29
-      # - name: Check Diff
-      #   run: git diff --exit-code dist/index.js
+      - name: Check Diff
+        run: git diff --exit-code dist/index.js
