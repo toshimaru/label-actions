@@ -105,7 +105,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: toshimaru/label-actions@v1.0.6
+      - uses: toshimaru/label-actions@v1.1.0
 ```
 
 ### Available input parameters
