@@ -42368,6 +42368,213 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 7525:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "App": () => (/* binding */ App)
+/* harmony export */ });
+const core = __nccwpck_require__(2186);
+const github = __nccwpck_require__(5438);
+const _ = __nccwpck_require__(250);
+
+class App {
+  constructor(config, client, actions) {
+    this.config = config;
+    this.client = client;
+    this.actions = actions;
+  }
+
+  async performActions() {
+    const payload = github.context.payload;
+
+    // if (payload.sender.type === 'Bot') {
+    //   return;
+    // }
+    const threadType = payload.issue ? 'issue' : 'pr';
+
+    const processOnly = this.config['process-only'];
+    if (processOnly && processOnly !== threadType) {
+      return;
+    }
+
+    const actions = this.getLabelActions(
+      payload.label.name,
+      payload.action,
+      threadType
+    );
+    if (!actions) {
+      return;
+    }
+
+    const threadData = payload.issue || payload.pull_request;
+
+    const { owner, repo } = github.context.repo;
+    const issue = { owner, repo, issue_number: threadData.number };
+
+    const lock = {
+      active: threadData.locked,
+      reason: threadData.active_lock_reason
+    };
+
+    if (actions.comment) {
+      core.debug('Commenting');
+      await this.ensureUnlock(issue, lock, async () => {
+        for (let commentBody of actions.comment) {
+          commentBody = commentBody.replace(
+            /{issue-author}/,
+            threadData.user.login
+          );
+
+          await this.client.issues.createComment({
+            ...issue,
+            body: commentBody
+          });
+        }
+      });
+    }
+
+    if (actions.label) {
+      const currentLabels = threadData.labels.map(label => label.name);
+      const newLabels = actions.label.filter(
+        label => !currentLabels.includes(label)
+      );
+
+      if (newLabels.length) {
+        core.debug('Labeling');
+        await this.client.issues.addLabels({
+          ...issue,
+          labels: newLabels
+        });
+      }
+    }
+
+    if (actions.reviewers) {
+      const author = threadData.user.login;
+      let reviewers = _.without(actions.reviewers, author);
+      reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
+      this.addReviewers(reviewers);
+    }
+
+    if (actions.unlabel) {
+      const currentLabels = threadData.labels.map(label => label.name);
+      const matchingLabels = currentLabels.filter(label =>
+        actions.unlabel.includes(label)
+      );
+
+      for (const label of matchingLabels) {
+        core.debug('Unlabeling');
+        await this.client.issues.removeLabel({
+          ...issue,
+          name: label
+        });
+      }
+    }
+
+    if (actions.reopen && threadData.state === 'closed' && !threadData.merged) {
+      core.debug('Reopening');
+      await this.client.issues.update({ ...issue, state: 'open' });
+    }
+
+    if (actions.close && threadData.state === 'open') {
+      core.debug('Closing');
+      await this.client.issues.update({ ...issue, state: 'closed' });
+    }
+
+    if (actions.lock && !threadData.locked) {
+      core.debug('Locking');
+      const params = { ...issue };
+      const lockReason = actions['lock-reason'];
+      if (lockReason) {
+        Object.assign(params, {
+          lock_reason: lockReason,
+          headers: {
+            Accept: 'application/vnd.github.sailor-v-preview+json'
+          }
+        });
+      }
+      await this.client.issues.lock(params);
+    }
+
+    if (actions.unlock && threadData.locked) {
+      core.debug('Unlocking');
+      await this.client.issues.unlock(issue);
+    }
+  }
+
+  getLabelActions(label, event, threadType) {
+    if (event === 'unlabeled') {
+      label = `-${label}`;
+    }
+    threadType = threadType === 'issue' ? 'issues' : 'prs';
+
+    const actions = this.actions[label];
+
+    if (actions) {
+      const threadActions = actions[threadType];
+      if (threadActions) {
+        Object.assign(actions, threadActions);
+      }
+
+      return actions;
+    }
+  }
+
+  async ensureUnlock(issue, lock, action) {
+    if (lock.active) {
+      if (!lock.hasOwnProperty('reason')) {
+        const { data: issueData } = await this.client.issues.get({
+          ...issue,
+          headers: {
+            Accept: 'application/vnd.github.sailor-v-preview+json'
+          }
+        });
+        lock.reason = issueData.active_lock_reason;
+      }
+      await this.client.issues.unlock(issue);
+
+      let actionError;
+      try {
+        await action();
+      } catch (err) {
+        actionError = err;
+      }
+
+      if (lock.reason) {
+        issue = {
+          ...issue,
+          lock_reason: lock.reason,
+          headers: {
+            Accept: 'application/vnd.github.sailor-v-preview+json'
+          }
+        };
+      }
+      await this.client.issues.lock(issue);
+
+      if (actionError) {
+        throw actionError;
+      }
+    } else {
+      await action();
+    }
+  }
+
+  async addReviewers(reviewers) {
+    const { owner, repo, number: pull_number } = github.context.issue;
+    await this.client.pulls.requestReviewers({
+      owner,
+      repo,
+      pull_number,
+      reviewers
+    });
+  }
+}
+
+
+/***/ }),
+
 /***/ 2399:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -42384,7 +42591,7 @@ const extendedJoi = Joi.extend({
         value = value.slice(0, -1);
       }
 
-      return {value};
+      return { value };
     }
   }
 });
@@ -42469,7 +42676,7 @@ const actionSchema = Joi.object()
   .min(1)
   .max(200);
 
-module.exports = {configSchema, actionSchema};
+module.exports = { configSchema, actionSchema };
 
 
 /***/ }),
@@ -42630,6 +42837,34 @@ module.exports = JSON.parse('{"name":"joi","description":"Object schema validati
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
 /******/ 		__nccwpck_require__.nmd = (module) => {
@@ -42650,9 +42885,9 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const yaml = __nccwpck_require__(1917);
-const _ = __nccwpck_require__(250);
 
-const {configSchema, actionSchema} = __nccwpck_require__(2399);
+const { App } = __nccwpck_require__(7525);
+const { configSchema, actionSchema } = __nccwpck_require__(2399);
 
 async function run() {
   try {
@@ -42661,201 +42896,9 @@ async function run() {
 
     const actions = await getActionConfig(client, config['config-path']);
 
-    const app = new App(config, client, actions);
-
-    await app.performActions();
+    await new App(config, client, actions).performActions();
   } catch (err) {
     core.setFailed(err);
-  }
-}
-
-class App {
-  constructor(config, client, actions) {
-    this.config = config;
-    this.client = client;
-    this.actions = actions;
-  }
-
-  async performActions() {
-    const payload = github.context.payload;
-
-    // if (payload.sender.type === 'Bot') {
-    //   return;
-    // }
-
-    const threadType = payload.issue ? 'issue' : 'pr';
-
-    const processOnly = this.config['process-only'];
-    if (processOnly && processOnly !== threadType) {
-      return;
-    }
-
-    const actions = this.getLabelActions(
-      payload.label.name,
-      payload.action,
-      threadType
-    );
-    if (!actions) {
-      return;
-    }
-
-    const threadData = payload.issue || payload.pull_request;
-
-    const {owner, repo} = github.context.repo;
-    const issue = {owner, repo, issue_number: threadData.number};
-
-    const lock = {
-      active: threadData.locked,
-      reason: threadData.active_lock_reason
-    };
-
-    if (actions.comment) {
-      core.debug('Commenting');
-      await this.ensureUnlock(issue, lock, async () => {
-        for (let commentBody of actions.comment) {
-          commentBody = commentBody.replace(
-            /{issue-author}/,
-            threadData.user.login
-          );
-
-          await this.client.issues.createComment({...issue, body: commentBody});
-        }
-      });
-    }
-
-    if (actions.label) {
-      const currentLabels = threadData.labels.map(label => label.name);
-      const newLabels = actions.label.filter(
-        label => !currentLabels.includes(label)
-      );
-
-      if (newLabels.length) {
-        core.debug('Labeling');
-        await this.client.issues.addLabels({
-          ...issue,
-          labels: newLabels
-        });
-      }
-    }
-
-    if (actions.reviewers) {
-      const author = threadData.user.login;
-      let reviewers = _.without(actions.reviewers, author);
-      reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
-      this.addReviewers(reviewers);
-    }
-
-    if (actions.unlabel) {
-      const currentLabels = threadData.labels.map(label => label.name);
-      const matchingLabels = currentLabels.filter(label =>
-        actions.unlabel.includes(label)
-      );
-
-      for (const label of matchingLabels) {
-        core.debug('Unlabeling');
-        await this.client.issues.removeLabel({
-          ...issue,
-          name: label
-        });
-      }
-    }
-
-    if (actions.reopen && threadData.state === 'closed' && !threadData.merged) {
-      core.debug('Reopening');
-      await this.client.issues.update({...issue, state: 'open'});
-    }
-
-    if (actions.close && threadData.state === 'open') {
-      core.debug('Closing');
-      await this.client.issues.update({...issue, state: 'closed'});
-    }
-
-    if (actions.lock && !threadData.locked) {
-      core.debug('Locking');
-      const params = {...issue};
-      const lockReason = actions['lock-reason'];
-      if (lockReason) {
-        Object.assign(params, {
-          lock_reason: lockReason,
-          headers: {
-            Accept: 'application/vnd.github.sailor-v-preview+json'
-          }
-        });
-      }
-      await this.client.issues.lock(params);
-    }
-
-    if (actions.unlock && threadData.locked) {
-      core.debug('Unlocking');
-      await this.client.issues.unlock(issue);
-    }
-  }
-
-  getLabelActions(label, event, threadType) {
-    if (event === 'unlabeled') {
-      label = `-${label}`;
-    }
-    threadType = threadType === 'issue' ? 'issues' : 'prs';
-
-    const actions = this.actions[label];
-
-    if (actions) {
-      const threadActions = actions[threadType];
-      if (threadActions) {
-        Object.assign(actions, threadActions);
-      }
-
-      return actions;
-    }
-  }
-
-  async ensureUnlock(issue, lock, action) {
-    if (lock.active) {
-      if (!lock.hasOwnProperty('reason')) {
-        const {data: issueData} = await this.client.issues.get({
-          ...issue,
-          headers: {
-            Accept: 'application/vnd.github.sailor-v-preview+json'
-          }
-        });
-        lock.reason = issueData.active_lock_reason;
-      }
-      await this.client.issues.unlock(issue);
-
-      let actionError;
-      try {
-        await action();
-      } catch (err) {
-        actionError = err;
-      }
-
-      if (lock.reason) {
-        issue = {
-          ...issue,
-          lock_reason: lock.reason,
-          headers: {
-            Accept: 'application/vnd.github.sailor-v-preview+json'
-          }
-        };
-      }
-      await this.client.issues.lock(issue);
-
-      if (actionError) {
-        throw actionError;
-      }
-    } else {
-      await action();
-    }
-  }
-
-  async addReviewers(reviewers) {
-    const {owner, repo, number: pull_number} = github.context.issue;
-    await this.client.pulls.requestReviewers({
-      owner,
-      repo,
-      pull_number,
-      reviewers
-    });
   }
 }
 
@@ -42867,7 +42910,7 @@ function getConfig() {
     ])
   );
 
-  const {error, value} = configSchema.validate(input, {abortEarly: false});
+  const { error, value } = configSchema.validate(input, { abortEarly: false });
   if (error) {
     throw error;
   }
@@ -42879,7 +42922,7 @@ async function getActionConfig(client, configPath) {
   let configData;
   try {
     ({
-      data: {content: configData}
+      data: { content: configData }
     } = await client.repos.getContent({
       ...github.context.repo,
       path: configPath
@@ -42897,7 +42940,7 @@ async function getActionConfig(client, configPath) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
 
-  const {error, value} = actionSchema.validate(input, {abortEarly: false});
+  const { error, value } = actionSchema.validate(input, { abortEarly: false });
   if (error) {
     throw error;
   }

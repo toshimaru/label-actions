@@ -16,6 +16,7 @@
   "scripts": {
     "build": "ncc build src/index.js -o dist",
     "lint": "prettier -c src",
+    "lint-fix": "prettier -w src",
     "release": "standard-version"
   },
   "dependencies": {
