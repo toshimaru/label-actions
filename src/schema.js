@@ -11,7 +11,7 @@ const extendedJoi = Joi.extend({
         value = value.slice(0, -1);
       }
 
-      return {value};
+      return { value };
     }
   }
 });
@@ -96,4 +96,4 @@ const actionSchema = Joi.object()
   .min(1)
   .max(200);
 
-module.exports = {configSchema, actionSchema};
+module.exports = { configSchema, actionSchema };

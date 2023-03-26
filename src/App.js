@@ -50,7 +50,10 @@ export class App {
             threadData.user.login
           );
 
-          await this.client.issues.createComment({ ...issue, body: commentBody });
+          await this.client.issues.createComment({
+            ...issue,
+            body: commentBody
+          });
         }
       });
     }
@@ -79,7 +82,8 @@ export class App {
 
     if (actions.unlabel) {
       const currentLabels = threadData.labels.map(label => label.name);
-      const matchingLabels = currentLabels.filter(label => actions.unlabel.includes(label)
+      const matchingLabels = currentLabels.filter(label =>
+        actions.unlabel.includes(label)
       );
 
       for (const label of matchingLabels) {

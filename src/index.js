@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const yaml = require('js-yaml');
 
-const { App } = require("./App");
+const { App } = require('./App');
 const { configSchema, actionSchema } = require('./schema');
 
 async function run() {
@@ -26,7 +26,7 @@ function getConfig() {
     ])
   );
 
-  const {error, value} = configSchema.validate(input, {abortEarly: false});
+  const { error, value } = configSchema.validate(input, { abortEarly: false });
   if (error) {
     throw error;
   }
@@ -38,7 +38,7 @@ async function getActionConfig(client, configPath) {
   let configData;
   try {
     ({
-      data: {content: configData}
+      data: { content: configData }
     } = await client.repos.getContent({
       ...github.context.repo,
       path: configPath
@@ -56,7 +56,7 @@ async function getActionConfig(client, configPath) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
 
-  const {error, value} = actionSchema.validate(input, {abortEarly: false});
+  const { error, value } = actionSchema.validate(input, { abortEarly: false });
   if (error) {
     throw error;
   }
