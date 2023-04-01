@@ -22,7 +22,7 @@ export class App {
       return;
     }
 
-    const actions = this.getLabelActions(
+    const actions = this.#getLabelActions(
       payload.label.name,
       payload.action,
       threadType
@@ -43,7 +43,7 @@ export class App {
 
     if (actions.comment) {
       core.debug('Commenting');
-      await this.ensureUnlock(issue, lock, async () => {
+      await this.#ensureUnlock(issue, lock, async () => {
         for (let commentBody of actions.comment) {
           commentBody = commentBody.replace(
             /{issue-author}/,
@@ -77,7 +77,7 @@ export class App {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
-      this.addReviewers(reviewers);
+      this.#addReviewers(reviewers);
     }
 
     if (actions.unlabel) {
@@ -126,7 +126,7 @@ export class App {
     }
   }
 
-  getLabelActions(label, event, threadType) {
+  #getLabelActions(label, event, threadType) {
     if (event === 'unlabeled') {
       label = `-${label}`;
     }
@@ -144,7 +144,7 @@ export class App {
     }
   }
 
-  async ensureUnlock(issue, lock, action) {
+  async #ensureUnlock(issue, lock, action) {
     if (lock.active) {
       if (!lock.hasOwnProperty('reason')) {
         const { data: issueData } = await this.client.rest.issues.get({
@@ -183,9 +183,9 @@ export class App {
     }
   }
 
-  async addReviewers(reviewers) {
+  async #addReviewers(reviewers) {
     const { owner, repo, number: pull_number } = github.context.issue;
-    await this.client.pulls.requestReviewers({
+    await this.client.rest.pulls.requestReviewers({
       owner,
       repo,
       pull_number,
