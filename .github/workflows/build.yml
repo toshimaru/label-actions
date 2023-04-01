@@ -15,4 +15,4 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - name: Check Diff
-        run: git diff --exit-code dist/index.js
+        run: git diff --exit-code --ignore-cr-at-eol dist/index.js
