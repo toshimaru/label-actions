@@ -50,7 +50,7 @@ export class App {
             threadData.user.login
           );
 
-          await this.client.issues.createComment({
+          await this.client.rest.issues.createComment({
             ...issue,
             body: commentBody
           });
@@ -66,7 +66,7 @@ export class App {
 
       if (newLabels.length) {
         core.debug('Labeling');
-        await this.client.issues.addLabels({
+        await this.client.rest.issues.addLabels({
           ...issue,
           labels: newLabels
         });
@@ -88,7 +88,7 @@ export class App {
 
       for (const label of matchingLabels) {
         core.debug('Unlabeling');
-        await this.client.issues.removeLabel({
+        await this.client.rest.issues.removeLabel({
           ...issue,
           name: label
         });
@@ -97,12 +97,12 @@ export class App {
 
     if (actions.reopen && threadData.state === 'closed' && !threadData.merged) {
       core.debug('Reopening');
-      await this.client.issues.update({ ...issue, state: 'open' });
+      await this.client.rest.issues.update({ ...issue, state: 'open' });
     }
 
     if (actions.close && threadData.state === 'open') {
       core.debug('Closing');
-      await this.client.issues.update({ ...issue, state: 'closed' });
+      await this.client.rest.issues.update({ ...issue, state: 'closed' });
     }
 
     if (actions.lock && !threadData.locked) {
@@ -117,12 +117,12 @@ export class App {
           }
         });
       }
-      await this.client.issues.lock(params);
+      await this.client.rest.issues.lock(params);
     }
 
     if (actions.unlock && threadData.locked) {
       core.debug('Unlocking');
-      await this.client.issues.unlock(issue);
+      await this.client.rest.issues.unlock(issue);
     }
   }
 
@@ -147,7 +147,7 @@ export class App {
   async ensureUnlock(issue, lock, action) {
     if (lock.active) {
       if (!lock.hasOwnProperty('reason')) {
-        const { data: issueData } = await this.client.issues.get({
+        const { data: issueData } = await this.client.rest.issues.get({
           ...issue,
           headers: {
             Accept: 'application/vnd.github.sailor-v-preview+json'
@@ -155,7 +155,7 @@ export class App {
         });
         lock.reason = issueData.active_lock_reason;
       }
-      await this.client.issues.unlock(issue);
+      await this.client.rest.issues.unlock(issue);
 
       let actionError;
       try {
@@ -173,7 +173,7 @@ export class App {
           }
         };
       }
-      await this.client.issues.lock(issue);
+      await this.client.rest.issues.lock(issue);
 
       if (actionError) {
         throw actionError;
