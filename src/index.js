@@ -39,7 +39,7 @@ async function getActionConfig(client, configPath) {
   try {
     ({
       data: { content: configData }
-    } = await client.repos.getContent({
+    } = await client.rest.repos.getContent({
       ...github.context.repo,
       path: configPath
     }));
