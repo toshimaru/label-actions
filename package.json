@@ -3,6 +3,9 @@
   "version": "1.2.0",
   "description": "A GitHub Action that performs actions when issues or pull requests are labeled or unlabeled.",
   "author": "Armin Sebastian",
+  "contributors": [
+    "Toshimaru"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/toshimaru/label-actions",
   "repository": {
