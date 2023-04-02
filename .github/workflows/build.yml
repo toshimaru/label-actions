@@ -17,6 +17,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run build
       - name: Check Diff
         run: git diff --exit-code --ignore-cr-at-eol dist/index.js
