@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const _ = require('lodash');
 
-export class App {
+class App {
   constructor(config, client, actions) {
     this.config = config;
     this.client = client;
@@ -193,3 +193,5 @@ export class App {
     });
   }
 }
+
+module.exports = App;

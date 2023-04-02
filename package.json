@@ -3,6 +3,9 @@
   "version": "1.2.0",
   "description": "A GitHub Action that performs actions when issues or pull requests are labeled or unlabeled.",
   "author": "Armin Sebastian",
+  "contributors": [
+    "Toshimaru"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/toshimaru/label-actions",
   "repository": {
@@ -17,7 +20,8 @@
     "build": "ncc build src/index.js -o dist",
     "lint": "prettier -c src",
     "lint-fix": "prettier -w src",
-    "release": "standard-version"
+    "release": "standard-version",
+    "test": "jest"
   },
   "dependencies": {
     "@actions/core": "^1.6.0",
@@ -28,6 +32,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.36.1",
+    "jest": "^29.5.0",
     "prettier": "^2.8.7",
     "standard-version": "^9.5.0"
   },
