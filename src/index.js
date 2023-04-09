@@ -2,8 +2,8 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const yaml = require('js-yaml');
 
-const { App } = require('./App');
-const { configSchema, actionSchema } = require('./schema');
+const App = require('./App');
+const { ConfigValidator, ActionValidator } = require('./Validator');
 
 async function run() {
   try {
@@ -18,20 +18,15 @@ async function run() {
   }
 }
 
-function getConfig() {
+async function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(configSchema.describe().keys).map(item => [
+    Object.keys(ConfigValidator.schema.describe().keys).map(item => [
       item,
       core.getInput(item)
     ])
   );
 
-  const { error, value } = configSchema.validate(input, { abortEarly: false });
-  if (error) {
-    throw error;
-  }
-
-  return value;
+  return await ConfigValidator.validate(input);
 }
 
 async function getActionConfig(client, configPath) {
@@ -56,12 +51,7 @@ async function getActionConfig(client, configPath) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
 
-  const { error, value } = actionSchema.validate(input, { abortEarly: false });
-  if (error) {
-    throw error;
-  }
-
-  return value;
+  return await ActionValidator.validate(input);
 }
 
 run();
