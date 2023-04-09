@@ -45573,7 +45573,8 @@ module.exports = App;
 /***/ 5693:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { configSchema, actionSchema } = __nccwpck_require__(2399);
+const configSchema = __nccwpck_require__(9110);
+const actionSchema = __nccwpck_require__(1566);
 
 class ConfigValidator {
   static get schema() {
@@ -45606,37 +45607,10 @@ module.exports = { ConfigValidator, ActionValidator };
 
 /***/ }),
 
-/***/ 2399:
+/***/ 1566:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const Joi = __nccwpck_require__(918);
-
-const extendedJoi = Joi.extend({
-  type: 'processOnly',
-  base: Joi.string(),
-  coerce: {
-    from: 'string',
-    method(value) {
-      value = value.trim();
-      if (['issues', 'prs'].includes(value)) {
-        value = value.slice(0, -1);
-      }
-
-      return { value };
-    }
-  }
-});
-
-const configSchema = Joi.object({
-  'github-token': Joi.string().trim().max(100),
-
-  'config-path': Joi.string()
-    .trim()
-    .max(200)
-    .default('.github/label-actions.yml'),
-
-  'process-only': extendedJoi.processOnly().valid('issue', 'pr', '').default('')
-});
 
 const actions = {
   close: Joi.boolean(),
@@ -45707,7 +45681,44 @@ const actionSchema = Joi.object()
   .min(1)
   .max(200);
 
-module.exports = { configSchema, actionSchema };
+module.exports = actionSchema;
+
+
+/***/ }),
+
+/***/ 9110:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const Joi = __nccwpck_require__(918);
+
+const extendedJoi = Joi.extend({
+  type: 'processOnly',
+  base: Joi.string(),
+  coerce: {
+    from: 'string',
+    method(value) {
+      value = value.trim();
+      if (['issues', 'prs'].includes(value)) {
+        value = value.slice(0, -1);
+      }
+
+      return { value };
+    }
+  }
+});
+
+const configSchema = Joi.object({
+  'github-token': Joi.string().trim().max(100),
+
+  'config-path': Joi.string()
+    .trim()
+    .max(200)
+    .default('.github/label-actions.yml'),
+
+  'process-only': extendedJoi.processOnly().valid('issue', 'pr', '').default('')
+});
+
+module.exports = configSchema;
 
 
 /***/ }),
@@ -45910,9 +45921,8 @@ const { ConfigValidator, ActionValidator } = __nccwpck_require__(5693);
 
 async function run() {
   try {
-    const config = getConfig();
+    const config = await getConfig();
     const client = github.getOctokit(config['github-token']);
-
     const actions = await getActionConfig(client, config['config-path']);
 
     await new App(config, client, actions).performActions();
