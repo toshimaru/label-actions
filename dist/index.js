@@ -13319,6 +13319,8 @@ module.exports = internals.State = class {
         if (this.mainstay.shadow) {
             this._snapshot = Clone(this.mainstay.shadow.node(this.path));
         }
+
+        this.mainstay.snapshot();
     }
 
     restore() {
@@ -13327,6 +13329,8 @@ module.exports = internals.State = class {
             this.mainstay.shadow.override(this.path, this._snapshot);
             this._snapshot = undefined;
         }
+
+        this.mainstay.restore();
     }
 };
 
@@ -18830,35 +18834,85 @@ exports.entryAsync = async function (value, schema, prefs) {
 
     if (mainstay.externals.length) {
         let root = result.value;
-        for (const { method, path, label } of mainstay.externals) {
+        const errors = [];
+        for (const external of mainstay.externals) {
+            const path = external.state.path;
+            const linked = external.schema.type === 'link' ? mainstay.links.get(external.schema) : null;
             let node = root;
             let key;
             let parent;
 
+            const ancestors = path.length ? [root] : [];
+            const original = path.length ? Reach(value, path) : value;
+
             if (path.length) {
                 key = path[path.length - 1];
-                parent = Reach(root, path.slice(0, -1));
+
+                let current = root;
+                for (const segment of path.slice(0, -1)) {
+                    current = current[segment];
+                    ancestors.unshift(current);
+                }
+
+                parent = ancestors[0];
                 node = parent[key];
             }
 
             try {
-                const output = await method(node, { prefs });
+                const createError = (code, local) => (linked || external.schema).$_createError(code, node, local, external.state, settings);
+                const output = await external.method(node, {
+                    schema: external.schema,
+                    linked,
+                    state: external.state,
+                    prefs,
+                    original,
+                    error: createError,
+                    errorsArray: internals.errorsArray,
+                    warn: (code, local) => mainstay.warnings.push((linked || external.schema).$_createError(code, node, local, external.state, settings)),
+                    message: (messages, local) => (linked || external.schema).$_createError('external', node, local, external.state, settings, { messages })
+                });
+
                 if (output === undefined ||
                     output === node) {
 
                     continue;
                 }
 
+                if (output instanceof Errors.Report) {
+                    mainstay.tracer.log(external.schema, external.state, 'rule', 'external', 'error');
+                    errors.push(output);
+
+                    if (settings.abortEarly) {
+                        break;
+                    }
+
+                    continue;
+                }
+
+                if (Array.isArray(output) &&
+                    output[Common.symbols.errors]) {
+                    mainstay.tracer.log(external.schema, external.state, 'rule', 'external', 'error');
+                    errors.push(...output);
+
+                    if (settings.abortEarly) {
+                        break;
+                    }
+
+                    continue;
+                }
+
                 if (parent) {
+                    mainstay.tracer.value(external.state, 'rule', node, output, 'external');
                     parent[key] = output;
                 }
                 else {
+                    mainstay.tracer.value(external.state, 'rule', root, output, 'external');
                     root = output;
                 }
             }
             catch (err) {
                 if (settings.errors.label) {
-                    err.message += ` (${label})`;       // Change message to include path
+                    err.message += ` (${(external.label)})`;       // Change message to include path
                 }
 
                 throw err;
@@ -18866,6 +18920,16 @@ exports.entryAsync = async function (value, schema, prefs) {
         }
 
         result.value = root;
+
+        if (errors.length) {
+            result.error = Errors.process(errors, value, settings);
+
+            if (mainstay.debug) {
+                result.error.debug = mainstay.debug;
+            }
+
+            throw result.error;
+        }
     }
 
     if (!settings.warnings &&
@@ -18892,6 +18956,38 @@ exports.entryAsync = async function (value, schema, prefs) {
 };
 
 
+internals.Mainstay = class {
+
+    constructor(tracer, debug, links) {
+
+        this.externals = [];
+        this.warnings = [];
+        this.tracer = tracer;
+        this.debug = debug;
+        this.links = links;
+        this.shadow = null;
+        this.artifacts = null;
+
+        this._snapshots = [];
+    }
+
+    snapshot() {
+
+        this._snapshots.push({
+            externals: this.externals.slice(),
+            warnings: this.warnings.slice()
+        });
+    }
+
+    restore() {
+
+        const snapshot = this._snapshots.pop();
+        this.externals = snapshot.externals;
+        this.warnings = snapshot.warnings;
+    }
+};
+
+
 internals.entry = function (value, schema, prefs) {
 
     // Prepare state
@@ -18899,7 +18995,7 @@ internals.entry = function (value, schema, prefs) {
     const { tracer, cleanup } = internals.tracer(schema, prefs);
     const debug = prefs.debug ? [] : null;
     const links = schema._ids._schemaChain ? new Map() : null;
-    const mainstay = { externals: [], warnings: [], tracer, debug, links };
+    const mainstay = new internals.Mainstay(tracer, debug, links);
     const schemas = schema._ids._schemaChain ? [{ schema }] : null;
     const state = new State([], [], { mainstay, schemas });
 
@@ -19277,7 +19373,7 @@ internals.finalize = function (value, errors, helpers) {
         prefs._externals !== false) {                       // Disabled for matching
 
         for (const { method } of schema.$_terms.externals) {
-            state.mainstay.externals.push({ method, path: state.path, label: Errors.label(schema._flags, state, prefs) });
+            state.mainstay.externals.push({ method, schema, state, label: Errors.label(schema._flags, state, prefs) });
         }
     }
 
@@ -45847,7 +45943,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.8.3","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.9.1","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ }),
 
