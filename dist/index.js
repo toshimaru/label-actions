@@ -45910,9 +45910,8 @@ const { ConfigValidator, ActionValidator } = __nccwpck_require__(5693);
 
 async function run() {
   try {
-    const config = getConfig();
+    const config = await getConfig();
     const client = github.getOctokit(config['github-token']);
-
     const actions = await getActionConfig(client, config['config-path']);
 
     await new App(config, client, actions).performActions();
