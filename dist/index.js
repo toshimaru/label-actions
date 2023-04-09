@@ -45570,6 +45570,42 @@ module.exports = App;
 
 /***/ }),
 
+/***/ 5693:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { configSchema, actionSchema } = __nccwpck_require__(2399);
+
+class ConfigValidator {
+  static get schema() {
+    return configSchema;
+  }
+
+  static async validate(input) {
+    const validatedConfig = await this.schema.validateAsync(input, {
+      abortEarly: false
+    });
+    return validatedConfig;
+  }
+}
+
+class ActionValidator {
+  static get #schema() {
+    return actionSchema;
+  }
+
+  static async validate(input) {
+    const validatedConfig = await this.#schema.validateAsync(input, {
+      abortEarly: false
+    });
+    return validatedConfig;
+  }
+}
+
+module.exports = { ConfigValidator, ActionValidator };
+
+
+/***/ }),
+
 /***/ 2399:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -45869,8 +45905,8 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const yaml = __nccwpck_require__(1917);
 
-const { App } = __nccwpck_require__(7525);
-const { configSchema, actionSchema } = __nccwpck_require__(2399);
+const App = __nccwpck_require__(7525);
+const { ConfigValidator, ActionValidator } = __nccwpck_require__(5693);
 
 async function run() {
   try {
@@ -45885,20 +45921,15 @@ async function run() {
   }
 }
 
-function getConfig() {
+async function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(configSchema.describe().keys).map(item => [
+    Object.keys(ConfigValidator.schema.describe().keys).map(item => [
       item,
       core.getInput(item)
     ])
   );
 
-  const { error, value } = configSchema.validate(input, { abortEarly: false });
-  if (error) {
-    throw error;
-  }
-
-  return value;
+  return await ConfigValidator.validate(input);
 }
 
 async function getActionConfig(client, configPath) {
@@ -45923,12 +45954,7 @@ async function getActionConfig(client, configPath) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
 
-  const { error, value } = actionSchema.validate(input, { abortEarly: false });
-  if (error) {
-    throw error;
-  }
-
-  return value;
+  return await ActionValidator.validate(input);
 }
 
 run();
