@@ -20,9 +20,9 @@ describe("ConfigValidator", () => {
     });
 
     it("should return schema", () => {
-        const schema = ConfigValidator.schema.describe().keys;
-        expect(schema).toHaveProperty('config-path');
-        expect(schema).toHaveProperty('github-token');
-        expect(schema).toHaveProperty('process-only');
+        const keys = ConfigValidator.schemaKeys;
+        expect(keys).toContain('config-path');
+        expect(keys).toContain('process-only');
+        expect(keys).toContain('github-token');
     });
 });

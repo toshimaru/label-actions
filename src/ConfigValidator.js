@@ -1,12 +1,12 @@
 const configSchema = require('./schemas/configSchema');
 
 class ConfigValidator {
-  static get schema() {
-    return configSchema;
+  static get schemaKeys() {
+    return Object.keys(configSchema.describe().keys);
   }
 
   static async validate(input) {
-    const validatedConfig = await this.schema.validateAsync(input, {
+    const validatedConfig = await configSchema.validateAsync(input, {
       abortEarly: false
     });
     return validatedConfig;

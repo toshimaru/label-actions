@@ -20,12 +20,8 @@ async function run() {
 
 async function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(ConfigValidator.schema.describe().keys).map(item => [
-      item,
-      core.getInput(item)
-    ])
+    ConfigValidator.schemaKeys.map(key => [key, core.getInput(key)])
   );
-
   return await ConfigValidator.validate(input);
 }
 
