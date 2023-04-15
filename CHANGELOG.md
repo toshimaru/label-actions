@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0-0](https://github.com/toshimaru/label-actions/compare/v1.2.0...v1.3.0-0) (2023-04-15)
+
+
+### Bug Fixes
+
+* Add `await` ([#82](https://github.com/toshimaru/label-actions/issues/82)) ([8ca6495](https://github.com/toshimaru/label-actions/commit/8ca6495f8cbce27f2eeef0c2f7c0894132d8b400)), closes [#81](https://github.com/toshimaru/label-actions/issues/81)
+
 ## [1.2.0](https://github.com/toshimaru/label-actions/compare/v1.1.0...v1.2.0) (2023-04-01)
 
 
