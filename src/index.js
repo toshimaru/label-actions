@@ -3,7 +3,8 @@ const github = require('@actions/github');
 const yaml = require('js-yaml');
 
 const App = require('./App');
-const { ConfigValidator, ActionValidator } = require('./Validator');
+const ConfigValidator = require('./ConfigValidator');
+const ActionValidator = require('./ActionValidator');
 
 async function run() {
   try {
