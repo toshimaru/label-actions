@@ -1,4 +1,4 @@
-[![Build Script](https://github.com/toshimaru/label-actions/actions/workflows/build.yml/badge.svg)](https://github.com/toshimaru/label-actions/actions/workflows/build.yml)
+[![Test](https://github.com/toshimaru/label-actions/actions/workflows/test.yml/badge.svg)](https://github.com/toshimaru/label-actions/actions/workflows/test.yml)
 
 # Label Actions
 
@@ -105,7 +105,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: toshimaru/label-actions@v1.1.0
+      - uses: toshimaru/label-actions@v1.2.0
 ```
 
 ### Available input parameters
