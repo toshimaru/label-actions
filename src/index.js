@@ -35,18 +35,15 @@ async function getActionConfig(client, configPath) {
       path: configPath
     }));
   } catch (err) {
-    if (err.status === 404) {
-      throw new Error(`Missing configuration file (${configPath})`);
-    } else {
-      throw err;
-    }
+    throw err.status === 404
+      ? new Error(`Missing configuration file (${configPath})`)
+      : err;
   }
 
   const input = yaml.load(Buffer.from(configData, 'base64').toString());
   if (!input) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
-
   return await ActionValidator.validate(input);
 }
 
