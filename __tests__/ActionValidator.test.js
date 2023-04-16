@@ -15,13 +15,13 @@ describe("ActionValidator", () => {
     };
 
     it("should return default config", async() => {
-        const origObj = { dummy: {} };
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "dummy": DEFAULT_ACTION_CONFIG });
+        const originalConfig = { dummy: {} };
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "dummy": DEFAULT_ACTION_CONFIG });
     });
 
     it("should return all values", async() => {
-        const origObj = { dummy: {
+        const originalConfig = { dummy: {
             "close": true,
             "comment": ["dummy comment"],
             "label": ["label1"],
@@ -33,31 +33,31 @@ describe("ActionValidator", () => {
             "unlabel": ["label2"],
             "unlock": true,
         }};
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "dummy": origObj.dummy });
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "dummy": originalConfig.dummy });
     });
 
     it("should return comment", async() => {
-        const origObj = { comment: { comment: ['my comment.'] } };
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "comment": {  ...DEFAULT_ACTION_CONFIG, ...origObj.comment } });
+        const originalConfig = { comment: { comment: ['my comment.'] } };
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "comment": {  ...DEFAULT_ACTION_CONFIG, ...originalConfig.comment } });
     });
 
     it("should return label", async() => {
-        const origObj = { wip: { label: ['label1'] } };
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "wip": {  ...DEFAULT_ACTION_CONFIG, ...origObj.wip } });
+        const originalConfig = { wip: { label: ['label1'] } };
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "wip": {  ...DEFAULT_ACTION_CONFIG, ...originalConfig.wip } });
     });
 
     it("should return pr.label", async() => {
-        const origObj = { wip: { prs: { label: ['label1', 'label2'] } } };
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "wip": {  ...DEFAULT_ACTION_CONFIG, ...origObj.wip } });
+        const originalConfig = { wip: { prs: { label: ['label1', 'label2'] } } };
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "wip": {  ...DEFAULT_ACTION_CONFIG, ...originalConfig.wip } });
     });
 
     it("should return reviewers", async() => {
-        const origObj = { review: { prs: { reviewers: ['reviewer1', 'reviewer2'], 'number-of-reviewers': 2 } } };
-        const validatedObj = await ActionValidator.validate(origObj)
-        expect(validatedObj).toStrictEqual({ "review": {  ...DEFAULT_ACTION_CONFIG, ...origObj.review } });
+        const originalConfig = { review: { prs: { reviewers: ['reviewer1', 'reviewer2'], 'number-of-reviewers': 2 } } };
+        const validatedConfig = await ActionValidator.validate(originalConfig)
+        expect(validatedConfig).toStrictEqual({ "review": {  ...DEFAULT_ACTION_CONFIG, ...originalConfig.review } });
     });
 });
