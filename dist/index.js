@@ -45462,6 +45462,25 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 5016:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const actionSchema = __nccwpck_require__(1566);
+
+class ActionValidator {
+  static async validate(input) {
+    const validatedConfig = await actionSchema.validateAsync(input, {
+      abortEarly: false
+    });
+    return validatedConfig;
+  }
+}
+
+module.exports = ActionValidator;
+
+
+/***/ }),
+
 /***/ 7525:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -45666,39 +45685,25 @@ module.exports = App;
 
 /***/ }),
 
-/***/ 5693:
+/***/ 2010:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const configSchema = __nccwpck_require__(9110);
-const actionSchema = __nccwpck_require__(1566);
 
 class ConfigValidator {
-  static get schema() {
-    return configSchema;
+  static get schemaKeys() {
+    return Object.keys(configSchema.describe().keys);
   }
 
   static async validate(input) {
-    const validatedConfig = await this.schema.validateAsync(input, {
+    const validatedConfig = await configSchema.validateAsync(input, {
       abortEarly: false
     });
     return validatedConfig;
   }
 }
 
-class ActionValidator {
-  static get #schema() {
-    return actionSchema;
-  }
-
-  static async validate(input) {
-    const validatedConfig = await this.#schema.validateAsync(input, {
-      abortEarly: false
-    });
-    return validatedConfig;
-  }
-}
-
-module.exports = { ConfigValidator, ActionValidator };
+module.exports = ConfigValidator;
 
 
 /***/ }),
@@ -46013,7 +46018,8 @@ const github = __nccwpck_require__(5438);
 const yaml = __nccwpck_require__(1917);
 
 const App = __nccwpck_require__(7525);
-const { ConfigValidator, ActionValidator } = __nccwpck_require__(5693);
+const ConfigValidator = __nccwpck_require__(2010);
+const ActionValidator = __nccwpck_require__(5016);
 
 async function run() {
   try {
@@ -46029,12 +46035,8 @@ async function run() {
 
 async function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(ConfigValidator.schema.describe().keys).map(item => [
-      item,
-      core.getInput(item)
-    ])
+    ConfigValidator.schemaKeys.map(key => [key, core.getInput(key)])
   );
-
   return await ConfigValidator.validate(input);
 }
 
@@ -46048,18 +46050,15 @@ async function getActionConfig(client, configPath) {
       path: configPath
     }));
   } catch (err) {
-    if (err.status === 404) {
-      throw new Error(`Missing configuration file (${configPath})`);
-    } else {
-      throw err;
-    }
+    throw err.status === 404
+      ? new Error(`Missing configuration file (${configPath})`)
+      : err;
   }
 
   const input = yaml.load(Buffer.from(configData, 'base64').toString());
   if (!input) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
-
   return await ActionValidator.validate(input);
 }
 

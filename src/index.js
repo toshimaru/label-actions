@@ -3,7 +3,8 @@ const github = require('@actions/github');
 const yaml = require('js-yaml');
 
 const App = require('./App');
-const { ConfigValidator, ActionValidator } = require('./Validator');
+const ConfigValidator = require('./ConfigValidator');
+const ActionValidator = require('./ActionValidator');
 
 async function run() {
   try {
@@ -19,12 +20,8 @@ async function run() {
 
 async function getConfig() {
   const input = Object.fromEntries(
-    Object.keys(ConfigValidator.schema.describe().keys).map(item => [
-      item,
-      core.getInput(item)
-    ])
+    ConfigValidator.schemaKeys.map(key => [key, core.getInput(key)])
   );
-
   return await ConfigValidator.validate(input);
 }
 
@@ -38,18 +35,15 @@ async function getActionConfig(client, configPath) {
       path: configPath
     }));
   } catch (err) {
-    if (err.status === 404) {
-      throw new Error(`Missing configuration file (${configPath})`);
-    } else {
-      throw err;
-    }
+    throw err.status === 404
+      ? new Error(`Missing configuration file (${configPath})`)
+      : err;
   }
 
   const input = yaml.load(Buffer.from(configData, 'base64').toString());
   if (!input) {
     throw new Error(`Empty configuration file (${configPath})`);
   }
-
   return await ActionValidator.validate(input);
 }
 
