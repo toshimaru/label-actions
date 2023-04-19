@@ -1,4 +1,4 @@
-const ActionValidator = require("../src/ActionValidator");
+const ActionValidator = require("../../src/validators/ActionValidator");
 
 describe("ActionValidator", () => {
     const DEFAULT_ACTION_CONFIG = {

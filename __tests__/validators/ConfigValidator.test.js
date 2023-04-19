@@ -1,4 +1,4 @@
-const ConfigValidator = require("../src/ConfigValidator");
+const ConfigValidator = require("../../src/validators/ConfigValidator");
 
 describe("ConfigValidator", () => {
     it("should return validated config", async() => {
