@@ -1,12 +1,17 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const yaml = require('js-yaml');
 const _ = require('lodash');
 
+const ActionValidator = require('./validators/ActionValidator');
+
 class App {
-  constructor(config, client, actions) {
+  /**
+   * @param {Object} config
+   */
+  constructor(config) {
     this.config = config;
-    this.client = client;
-    this.actions = actions;
+    this.client = github.getOctokit(config['github-token']);
   }
 
   async performActions() {
@@ -22,7 +27,7 @@ class App {
       return;
     }
 
-    const actions = this.#getLabelActions(
+    const actions = await this.#getLabelActions(
       payload.label.name,
       payload.action,
       threadType
@@ -126,22 +131,47 @@ class App {
     }
   }
 
-  #getLabelActions(label, event, threadType) {
+  async #getLabelActions(label, event, threadType) {
     if (event === 'unlabeled') {
       label = `-${label}`;
     }
     threadType = threadType === 'issue' ? 'issues' : 'prs';
 
-    const actions = this.actions[label];
-
-    if (actions) {
-      const threadActions = actions[threadType];
+    const actionConfig = await this.#getActionConfig();
+    const action = actionConfig[label];
+    if (action) {
+      const threadActions = action[threadType];
       if (threadActions) {
-        Object.assign(actions, threadActions);
+        Object.assign(action, threadActions);
       }
-
-      return actions;
+      return action;
     }
+  }
+
+  /**
+   * @returns {Promise<Object>}
+   */
+  async #getActionConfig() {
+    const configPath = this.config['config-path'];
+    let configData;
+    try {
+      ({
+        data: { content: configData }
+      } = await this.client.rest.repos.getContent({
+        ...github.context.repo,
+        path: configPath
+      }));
+    } catch (err) {
+      throw err.status === 404
+        ? new Error(`Missing configuration file (${configPath})`)
+        : err;
+    }
+
+    const input = yaml.load(Buffer.from(configData, 'base64').toString());
+    if (!input) {
+      throw new Error(`Empty configuration file (${configPath})`);
+    }
+    return await ActionValidator.validate(input);
   }
 
   async #ensureUnlock(issue, lock, action) {
