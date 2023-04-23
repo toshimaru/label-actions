@@ -33,6 +33,7 @@ class App {
       threadType
     );
     if (!actions) {
+      core.debug('No actions found');
       return;
     }
 
