@@ -79,7 +79,7 @@ class App {
       }
     }
 
-    if (actions.reviewers) {
+    if (actions.reviewers.length > 0) {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
