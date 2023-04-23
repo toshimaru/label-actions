@@ -153,26 +153,26 @@ class App {
    * @returns {Promise<Object>}
    */
   async #getActionConfig() {
-    const configPath = this.config['config-path'];
-    let configData;
-    try {
-      ({
-        data: { content: configData }
-      } = await this.client.rest.repos.getContent({
-        ...github.context.repo,
-        path: configPath
-      }));
-    } catch (err) {
-      throw err.status === 404
-        ? new Error(`Missing configuration file (${configPath})`)
-        : err;
-    }
-
+    const configData = await this.#getContent();
     const input = yaml.load(Buffer.from(configData, 'base64').toString());
     if (!input) {
-      throw new Error(`Empty configuration file (${configPath})`);
+      throw new Error(`Empty configuration file (${this.#configPath})`);
     }
     return await ActionValidator.validate(input);
+  }
+
+  async #getContent() {
+    try {
+      const response = await this.client.rest.repos.getContent({
+        ...github.context.repo,
+        path: this.#configPath
+      });
+      return response.data.content;
+    } catch (err) {
+      throw err.status === 404
+        ? new Error(`Missing configuration file (${this.#configPath})`)
+        : err;
+    }
   }
 
   async #ensureUnlock(issue, lock, action) {
@@ -222,6 +222,10 @@ class App {
       pull_number,
       reviewers
     });
+  }
+
+  get #configPath() {
+    return this.config['config-path'];
   }
 }
 
