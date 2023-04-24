@@ -1,4 +1,4 @@
-const actionSchema = require('./schemas/actionSchema');
+const actionSchema = require('../schemas/actionSchema');
 
 class ActionValidator {
   static async validate(input) {

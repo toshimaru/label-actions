@@ -45915,37 +45915,23 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 5016:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const actionSchema = __nccwpck_require__(1566);
-
-class ActionValidator {
-  static async validate(input) {
-    const validatedConfig = await actionSchema.validateAsync(input, {
-      abortEarly: false
-    });
-    return validatedConfig;
-  }
-}
-
-module.exports = ActionValidator;
-
-
-/***/ }),
-
 /***/ 7525:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
+const yaml = __nccwpck_require__(1917);
 const _ = __nccwpck_require__(250);
 
+const ActionValidator = __nccwpck_require__(9224);
+
 class App {
-  constructor(config, client, actions) {
+  /**
+   * @param {Object} config
+   */
+  constructor(config) {
     this.config = config;
-    this.client = client;
-    this.actions = actions;
+    this.client = github.getOctokit(config['github-token']);
   }
 
   async performActions() {
@@ -45961,12 +45947,13 @@ class App {
       return;
     }
 
-    const actions = this.#getLabelActions(
+    const actions = await this.#getLabelActions(
       payload.label.name,
       payload.action,
       threadType
     );
     if (!actions) {
+      core.debug('No actions found');
       return;
     }
 
@@ -46012,7 +45999,7 @@ class App {
       }
     }
 
-    if (actions.reviewers) {
+    if (actions.reviewers.length > 0) {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
@@ -46065,21 +46052,46 @@ class App {
     }
   }
 
-  #getLabelActions(label, event, threadType) {
+  async #getLabelActions(label, event, threadType) {
     if (event === 'unlabeled') {
       label = `-${label}`;
     }
     threadType = threadType === 'issue' ? 'issues' : 'prs';
 
-    const actions = this.actions[label];
-
-    if (actions) {
-      const threadActions = actions[threadType];
+    const actionConfig = await this.#getActionConfig();
+    const action = actionConfig[label];
+    if (action) {
+      const threadActions = action[threadType];
       if (threadActions) {
-        Object.assign(actions, threadActions);
+        Object.assign(action, threadActions);
       }
+      return action;
+    }
+  }
 
-      return actions;
+  /**
+   * @returns {Promise<Object>}
+   */
+  async #getActionConfig() {
+    const configData = await this.#getContent();
+    const input = yaml.load(Buffer.from(configData, 'base64').toString());
+    if (!input) {
+      throw new Error(`Empty configuration file (${this.#configPath})`);
+    }
+    return await ActionValidator.validate(input);
+  }
+
+  async #getContent() {
+    try {
+      const response = await this.client.rest.repos.getContent({
+        ...github.context.repo,
+        path: this.#configPath
+      });
+      return response.data.content;
+    } catch (err) {
+      throw err.status === 404
+        ? new Error(`Missing configuration file (${this.#configPath})`)
+        : err;
     }
   }
 
@@ -46131,32 +46143,13 @@ class App {
       reviewers
     });
   }
+
+  get #configPath() {
+    return this.config['config-path'];
+  }
 }
 
 module.exports = App;
-
-
-/***/ }),
-
-/***/ 2010:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const configSchema = __nccwpck_require__(9110);
-
-class ConfigValidator {
-  static get schemaKeys() {
-    return Object.keys(configSchema.describe().keys);
-  }
-
-  static async validate(input) {
-    const validatedConfig = await configSchema.validateAsync(input, {
-      abortEarly: false
-    });
-    return validatedConfig;
-  }
-}
-
-module.exports = ConfigValidator;
 
 
 /***/ }),
@@ -46273,6 +46266,48 @@ const configSchema = Joi.object({
 });
 
 module.exports = configSchema;
+
+
+/***/ }),
+
+/***/ 9224:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const actionSchema = __nccwpck_require__(1566);
+
+class ActionValidator {
+  static async validate(input) {
+    const validatedConfig = await actionSchema.validateAsync(input, {
+      abortEarly: false
+    });
+    return validatedConfig;
+  }
+}
+
+module.exports = ActionValidator;
+
+
+/***/ }),
+
+/***/ 7789:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const configSchema = __nccwpck_require__(9110);
+
+class ConfigValidator {
+  static get schemaKeys() {
+    return Object.keys(configSchema.describe().keys);
+  }
+
+  static async validate(input) {
+    const validatedConfig = await configSchema.validateAsync(input, {
+      abortEarly: false
+    });
+    return validatedConfig;
+  }
+}
+
+module.exports = ConfigValidator;
 
 
 /***/ }),
@@ -46475,20 +46510,14 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(2186);
-const github = __nccwpck_require__(5438);
-const yaml = __nccwpck_require__(1917);
 
 const App = __nccwpck_require__(7525);
-const ConfigValidator = __nccwpck_require__(2010);
-const ActionValidator = __nccwpck_require__(5016);
+const ConfigValidator = __nccwpck_require__(7789);
 
 async function run() {
   try {
     const config = await getConfig();
-    const client = github.getOctokit(config['github-token']);
-    const actions = await getActionConfig(client, config['config-path']);
-
-    await new App(config, client, actions).performActions();
+    await new App(config).performActions();
   } catch (err) {
     core.setFailed(err);
   }
@@ -46499,28 +46528,6 @@ async function getConfig() {
     ConfigValidator.schemaKeys.map(key => [key, core.getInput(key)])
   );
   return await ConfigValidator.validate(input);
-}
-
-async function getActionConfig(client, configPath) {
-  let configData;
-  try {
-    ({
-      data: { content: configData }
-    } = await client.rest.repos.getContent({
-      ...github.context.repo,
-      path: configPath
-    }));
-  } catch (err) {
-    throw err.status === 404
-      ? new Error(`Missing configuration file (${configPath})`)
-      : err;
-  }
-
-  const input = yaml.load(Buffer.from(configData, 'base64').toString());
-  if (!input) {
-    throw new Error(`Empty configuration file (${configPath})`);
-  }
-  return await ActionValidator.validate(input);
 }
 
 run();

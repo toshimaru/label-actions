@@ -1,4 +1,4 @@
-const configSchema = require('./schemas/configSchema');
+const configSchema = require('../schemas/configSchema');
 
 class ConfigValidator {
   static get schemaKeys() {

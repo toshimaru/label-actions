@@ -1,12 +1,17 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const yaml = require('js-yaml');
 const _ = require('lodash');
 
+const ActionValidator = require('./validators/ActionValidator');
+
 class App {
-  constructor(config, client, actions) {
+  /**
+   * @param {Object} config
+   */
+  constructor(config) {
     this.config = config;
-    this.client = client;
-    this.actions = actions;
+    this.client = github.getOctokit(config['github-token']);
   }
 
   async performActions() {
@@ -22,12 +27,13 @@ class App {
       return;
     }
 
-    const actions = this.#getLabelActions(
+    const actions = await this.#getLabelActions(
       payload.label.name,
       payload.action,
       threadType
     );
     if (!actions) {
+      core.debug('No actions found');
       return;
     }
 
@@ -73,7 +79,7 @@ class App {
       }
     }
 
-    if (actions.reviewers) {
+    if (actions.reviewers.length > 0) {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
@@ -126,21 +132,46 @@ class App {
     }
   }
 
-  #getLabelActions(label, event, threadType) {
+  async #getLabelActions(label, event, threadType) {
     if (event === 'unlabeled') {
       label = `-${label}`;
     }
     threadType = threadType === 'issue' ? 'issues' : 'prs';
 
-    const actions = this.actions[label];
-
-    if (actions) {
-      const threadActions = actions[threadType];
+    const actionConfig = await this.#getActionConfig();
+    const action = actionConfig[label];
+    if (action) {
+      const threadActions = action[threadType];
       if (threadActions) {
-        Object.assign(actions, threadActions);
+        Object.assign(action, threadActions);
       }
+      return action;
+    }
+  }
 
-      return actions;
+  /**
+   * @returns {Promise<Object>}
+   */
+  async #getActionConfig() {
+    const configData = await this.#getContent();
+    const input = yaml.load(Buffer.from(configData, 'base64').toString());
+    if (!input) {
+      throw new Error(`Empty configuration file (${this.#configPath})`);
+    }
+    return await ActionValidator.validate(input);
+  }
+
+  async #getContent() {
+    try {
+      const response = await this.client.rest.repos.getContent({
+        ...github.context.repo,
+        path: this.#configPath
+      });
+      return response.data.content;
+    } catch (err) {
+      throw err.status === 404
+        ? new Error(`Missing configuration file (${this.#configPath})`)
+        : err;
     }
   }
 
@@ -191,6 +222,10 @@ class App {
       pull_number,
       reviewers
     });
+  }
+
+  get #configPath() {
+    return this.config['config-path'];
   }
 }
 
