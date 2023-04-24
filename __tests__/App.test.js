@@ -40,15 +40,24 @@ describe("App", () => {
         it('triggers `comment` action', async () => {
             const config = { 'github-token': 'dummy-token' };
             const debugLogSpy = jest.spyOn(core, 'debug');
-            jest.replaceProperty(github, 'context', { payload: { label: { name: 'test' }, issue: { user: {}, number: 1 } }, repo: { owner: 'toshimaru', repo: 'my-repo' } });
+            const context = { 
+                payload: {
+                    label: { name: 'test' }, 
+                    issue: { user: { login: 'test-user' }, number: 1 } 
+                },
+                repo: { owner: 'toshimaru', repo: 'my-repo' }
+            };
+            jest.replaceProperty(github, 'context', context);
             const createComment = jest.fn();
-            mockContent('test:\n  comment: hello', { issues: { createComment: createComment } });
+            mockContent('test:\n  comment: "@{issue-author} hello"', { issues: { createComment: createComment } });
     
             const app = new App(config);
             await app.performActions();
             expect(github.getOctokit).toHaveBeenCalledWith(config['github-token']);
             expect(debugLogSpy).toHaveBeenCalledWith('Commenting');
-            expect(createComment).toHaveBeenCalledWith({ owner: 'toshimaru', repo: 'my-repo', issue_number: 1, body: 'hello' });
+            expect(createComment).toHaveBeenCalledWith({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: context.payload.issue.number, body: '@test-user hello'
+            });
         });
     });
 });
