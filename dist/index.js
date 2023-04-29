@@ -45936,12 +45936,7 @@ class App {
 
   async performActions() {
     const payload = github.context.payload;
-
-    // if (payload.sender.type === 'Bot') {
-    //   return;
-    // }
     const threadType = payload.issue ? 'issue' : 'pr';
-
     const processOnly = this.config['process-only'];
     if (processOnly && processOnly !== threadType) {
       return;
@@ -45958,7 +45953,6 @@ class App {
     }
 
     const threadData = payload.issue || payload.pull_request;
-
     const { owner, repo } = github.context.repo;
     const issue = { owner, repo, issue_number: threadData.number };
 
@@ -45986,9 +45980,7 @@ class App {
 
     if (actions.label) {
       const currentLabels = threadData.labels.map(label => label.name);
-      const newLabels = actions.label.filter(
-        label => !currentLabels.includes(label)
-      );
+      const newLabels = _.difference(actions.label, currentLabels);
 
       if (newLabels.length) {
         core.debug('Labeling');
@@ -46003,7 +45995,7 @@ class App {
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
-      this.#addReviewers(reviewers);
+      await this.#addReviewers(reviewers);
     }
 
     if (actions.unlabel) {
