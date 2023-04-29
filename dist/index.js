@@ -45986,9 +45986,7 @@ class App {
 
     if (actions.label) {
       const currentLabels = threadData.labels.map(label => label.name);
-      const newLabels = actions.label.filter(
-        label => !currentLabels.includes(label)
-      );
+      const newLabels = _.difference(actions.label, currentLabels)
 
       if (newLabels.length) {
         core.debug('Labeling');
