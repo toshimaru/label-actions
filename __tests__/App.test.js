@@ -82,6 +82,25 @@ describe("App", () => {
                     owner: context.repo.owner, repo: context.repo.repo, issue_number: context.payload.pull_request.number, labels: ['on hold']
                 });
             });
+
+            it('adds a label that was already assigned', async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: { login: 'test-user' }, number: 1, labels: [ { name: "on hold" }] } 
+                    },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const addLabels = jest.fn();
+                mockContent('test:\n  prs:\n    label: "on hold"', { issues: { addLabels: addLabels } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).not.toHaveBeenCalledWith('Labeling');
+                expect(addLabels).not.toBeCalled();
+            });
             
             it('adds labels', async () => {
                 const debugLogSpy = jest.spyOn(core, 'debug');
