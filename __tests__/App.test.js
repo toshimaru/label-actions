@@ -34,6 +34,7 @@ describe("App", () => {
             const app = new App(config);
             await app.performActions();
             expect(github.getOctokit).toHaveBeenCalledWith(config['github-token']);
+            expect(debugLogSpy).toHaveBeenCalledTimes(1);
             expect(debugLogSpy).toHaveBeenCalledWith('No actions found');
         });
 
