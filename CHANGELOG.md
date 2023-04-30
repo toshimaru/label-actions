@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0-2](https://github.com/toshimaru/label-actions/compare/v1.3.0-1...v1.3.0-2) (2023-04-30)
+
+
+### Bug Fixes
+
+* Check if reviewers array is empty or not ([51cf095](https://github.com/toshimaru/label-actions/commit/51cf095e47fd93b43233610c7e6b9df566a6d3fb))
+
 ## [1.3.0-1](https://github.com/toshimaru/label-actions/compare/v1.3.0-0...v1.3.0-1) (2023-04-18)
 
 ## [1.3.0-0](https://github.com/toshimaru/label-actions/compare/v1.2.0...v1.3.0-0) (2023-04-15)
