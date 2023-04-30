@@ -149,6 +149,28 @@ describe("App", () => {
                     owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru2']
                 });
             });
+
+            it('adds reviewers', async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: {} } 
+                    },
+                    issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const requestReviewers = jest.fn();
+                mockContent('test:\n  prs:\n    reviewers: [toshimaru2, toshimaru3]\n    number-of-reviewers: 3', { pulls: { requestReviewers: requestReviewers } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
+                expect(requestReviewers).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru2', 'toshimaru3']
+                });
+            });
         });
     });
 });
