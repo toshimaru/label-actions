@@ -33,6 +33,7 @@ class App {
     }
 
     const threadData = payload.issue || payload.pull_request;
+    // TODO: Use `github.context.issue`
     const { owner, repo } = github.context.repo;
     const issue = { owner, repo, issue_number: threadData.number };
 
