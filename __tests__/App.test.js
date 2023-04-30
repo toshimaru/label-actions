@@ -34,6 +34,7 @@ describe("App", () => {
             const app = new App(config);
             await app.performActions();
             expect(github.getOctokit).toHaveBeenCalledWith(config['github-token']);
+            expect(debugLogSpy).toHaveBeenCalledTimes(1);
             expect(debugLogSpy).toHaveBeenCalledWith('No actions found');
         });
 
@@ -120,6 +121,76 @@ describe("App", () => {
                 expect(debugLogSpy).toHaveBeenCalledWith('Labeling');
                 expect(addLabels).toHaveBeenCalledWith({
                     owner: context.repo.owner, repo: context.repo.repo, issue_number: context.payload.pull_request.number, labels: ['on hold', 'pending']
+                });
+            });
+        });
+
+        describe('triggers `reviewers` action', () => {
+            const config = { 'github-token': 'dummy-token' };
+            
+            it('adds a reviewer', async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: {} } 
+                    },
+                    issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const requestReviewers = jest.fn();
+                mockContent('test:\n  prs:\n    reviewers: [toshimaru2]', { pulls: { requestReviewers: requestReviewers } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
+                expect(requestReviewers).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru2']
+                });
+            });
+
+            it('adds reviewers', async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: {} } 
+                    },
+                    issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const requestReviewers = jest.fn();
+                mockContent('test:\n  prs:\n    reviewers: [toshimaru2, toshimaru3]\n    number-of-reviewers: 3', { pulls: { requestReviewers: requestReviewers } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
+                expect(requestReviewers).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: expect.arrayContaining(['toshimaru2', 'toshimaru3'])
+                });
+            });
+
+            it(`doesn't assign an author as a reviewer`, async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: { login: 'toshimaru2' } } 
+                    },
+                    issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const requestReviewers = jest.fn();
+                mockContent('test:\n  prs:\n    reviewers: [toshimaru2, toshimaru3]', { pulls: { requestReviewers: requestReviewers } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
+                expect(requestReviewers).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru3']
                 });
             });
         });
