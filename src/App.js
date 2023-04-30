@@ -72,6 +72,7 @@ class App {
     }
 
     if (actions.reviewers.length > 0) {
+      core.debug('Assigning reviewers');
       const author = threadData.user.login;
       let reviewers = _.without(actions.reviewers, author);
       reviewers = _.sampleSize(reviewers, actions['number-of-reviewers']);
