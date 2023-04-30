@@ -168,7 +168,29 @@ describe("App", () => {
                 await app.performActions();
                 expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
                 expect(requestReviewers).toHaveBeenCalledWith({
-                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru2', 'toshimaru3']
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: expect.arrayContaining(['toshimaru2', 'toshimaru3'])
+                });
+            });
+
+            it(`doesn't assign an author as a reviewer`, async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        pull_request: { user: { login: 'toshimaru2' } } 
+                    },
+                    issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const requestReviewers = jest.fn();
+                mockContent('test:\n  prs:\n    reviewers: [toshimaru2, toshimaru3]', { pulls: { requestReviewers: requestReviewers } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Assigning reviewers');
+                expect(requestReviewers).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, reviewers: ['toshimaru3']
                 });
             });
         });
