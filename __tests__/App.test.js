@@ -194,5 +194,51 @@ describe("App", () => {
                 });
             });
         });
+
+        describe('triggers `unlabel` action', () => {
+            const config = { 'github-token': 'dummy-token' };
+            
+            it('unlabels a label', async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        action: 'unlabeled',
+                        pull_request: { labels: [ { name: "on hold" } ], number: 1 }
+                    },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const removeLabel = jest.fn();
+                mockContent('-test:\n  prs:\n    unlabel: "on hold"', { issues: { removeLabel: removeLabel } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).toHaveBeenCalledWith('Unlabeling');
+                expect(removeLabel).toHaveBeenCalledWith({
+                    owner: context.repo.owner, repo: context.repo.repo, issue_number: context.payload.pull_request.number, name: 'on hold'
+                });
+            });
+
+            it(`does't remove a label that is not assigned`, async () => {
+                const debugLogSpy = jest.spyOn(core, 'debug');
+                const context = { 
+                    payload: {
+                        label: { name: 'test' }, 
+                        action: 'unlabeled',
+                        pull_request: { labels: [ { name: "test" } ], number: 1 }
+                    },
+                    repo: { owner: 'toshimaru', repo: 'my-repo' }
+                };
+                jest.replaceProperty(github, 'context', context);
+                const removeLabel = jest.fn();
+                mockContent('-test:\n  prs:\n    unlabel: "on hold"', { issues: { removeLabel: removeLabel } });
+        
+                const app = new App(config);
+                await app.performActions();
+                expect(debugLogSpy).not.toHaveBeenCalledWith('Unlabeling');
+                expect(removeLabel).not.toBeCalled();
+            });
+        });
     });
 });
