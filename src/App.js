@@ -82,11 +82,9 @@ class App {
 
     if (actions.unlabel) {
       const currentLabels = threadData.labels.map(label => label.name);
-      const matchingLabels = currentLabels.filter(label =>
-        actions.unlabel.includes(label)
-      );
+      const removedLabels = _.intersection(currentLabels, actions.unlabel);
 
-      for (const label of matchingLabels) {
+      for (const label of removedLabels) {
         core.debug('Unlabeling');
         await this.client.rest.issues.removeLabel({
           ...issue,
