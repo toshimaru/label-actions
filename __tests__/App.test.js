@@ -135,7 +135,7 @@ describe("App", () => {
             label: { name: 'test' },
             pull_request: { user: {} }
           },
-          issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+          issue: { number: 1 },
           repo: { owner: 'toshimaru', repo: 'my-repo' }
         };
         jest.replaceProperty(github, 'context', context);
@@ -157,7 +157,7 @@ describe("App", () => {
             label: { name: 'test' },
             pull_request: { user: {} }
           },
-          issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+          issue: { number: 1 },
           repo: { owner: 'toshimaru', repo: 'my-repo' }
         };
         jest.replaceProperty(github, 'context', context);
@@ -179,7 +179,7 @@ describe("App", () => {
             label: { name: 'test' },
             pull_request: { user: { login: 'toshimaru2' } }
           },
-          issue: { owner: 'toshimaru', repo: 'my-repo', number: 1 },
+          issue: { number: 1 },
           repo: { owner: 'toshimaru', repo: 'my-repo' }
         };
         jest.replaceProperty(github, 'context', context);
