@@ -22,3 +22,6 @@ heated:
     Please follow our community guidelines.
   lock: true
   lock-reason: 'too heated'
+
+-heated:
+  unlock: true
