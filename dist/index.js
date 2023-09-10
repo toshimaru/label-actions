@@ -13139,6 +13139,16 @@ module.exports = internals.State = class {
 
         this.mainstay.restore();
     }
+
+    commit() {
+
+        if (this.mainstay.shadow) {
+            this.mainstay.shadow.override(this.path, this._snapshot);
+            this._snapshot = undefined;
+        }
+
+        this.mainstay.commit();
+    }
 };
 
 
@@ -14094,6 +14104,7 @@ module.exports = Any.extend({
                 const result = item.schema.$_validate(value, localState, prefs);
                 if (!result.errors) {
                     matched.push(result.value);
+                    localState.commit();
                 }
                 else {
                     failed.push(result.errors);
@@ -14151,6 +14162,7 @@ module.exports = Any.extend({
 
                 const result = item.schema.$_validate(value, localState, prefs);
                 if (!result.errors) {
+                    localState.commit();
                     return result;
                 }
 
@@ -14810,6 +14822,7 @@ module.exports = Any.extend({
                         requiredChecks[j] = res;
 
                         if (!res.errors) {
+                            localState.commit();
                             value[i] = res.value;
                             isValid = true;
                             internals.fastSplice(requireds, j);
@@ -14855,6 +14868,7 @@ module.exports = Any.extend({
 
                             res = inclusion.$_validate(item, localState, prefs);
                             if (!res.errors) {
+                                localState.commit();
                                 if (inclusion._flags.result === 'strip') {
                                     internals.fastSplice(value, i);
                                     --i;
@@ -15411,13 +15425,15 @@ module.exports = Any.extend({
     type: 'binary',
 
     coerce: {
-        from: 'string',
+        from: ['string', 'object'],
         method(value, { schema }) {
 
-            try {
-                return { value: Buffer.from(value, schema._flags.encoding) };
+            if (typeof value === 'string' || (value !== null && value.type === 'Buffer')) {
+                try {
+                    return { value: Buffer.from(value, schema._flags.encoding) };
+                }
+                catch (ignoreErr) { }
             }
-            catch (ignoreErr) { }
         }
     },
 
@@ -17667,7 +17683,10 @@ const internals = {
         uuidv2: '2',
         uuidv3: '3',
         uuidv4: '4',
-        uuidv5: '5'
+        uuidv5: '5',
+        uuidv6: '6',
+        uuidv7: '7',
+        uuidv8: '8'
     },
     guidSeparators: new Set([undefined, true, false, '-', ':']),
 
@@ -18791,6 +18810,11 @@ internals.Mainstay = class {
         const snapshot = this._snapshots.pop();
         this.externals = snapshot.externals;
         this.warnings = snapshot.warnings;
+    }
+
+    commit() {
+
+        this._snapshots.pop();
     }
 };
 
@@ -46436,7 +46460,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.9.1","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.10.1","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ }),
 
