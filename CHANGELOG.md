@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0-3](https://github.com/toshimaru/label-actions/compare/v1.3.0-2...v1.3.0-3) (2023-09-10)
+
+
+### Features
+
+* Bump action node from node16 to node20 ([#102](https://github.com/toshimaru/label-actions/issues/102)) ([2d2a2a3](https://github.com/toshimaru/label-actions/commit/2d2a2a38c26c13f378771ba421cafee541746a45))
+
 ## [1.3.0-2](https://github.com/toshimaru/label-actions/compare/v1.3.0-1...v1.3.0-2) (2023-04-30)
 
 
