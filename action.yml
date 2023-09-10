@@ -12,7 +12,7 @@ inputs:
     description: 'Process label events only for issues or pull requests, value must be either `issues` or `prs`'
     default: ''
 runs:
-  using: 'node16'
+  using: node20
   main: 'dist/index.js'
 branding:
   icon: 'tag'
