@@ -17,12 +17,8 @@ incomplete:
     number-of-reviewers: 1
 
 heated:
-  prs:
-    comment: >
-      The thread has been temporarily locked.
-      Please follow our community guidelines.
-    lock: true
-
--heated:
-  prs:
-    unlock: true
+  comment: >
+    The thread has been temporarily locked.
+    Please follow our community guidelines.
+  lock: true
+  lock-reason: 'too heated'
