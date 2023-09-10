@@ -41,13 +41,12 @@ class App {
       issue_number: threadData.number
     };
 
-    const lock = {
-      active: threadData.locked,
-      reason: threadData.active_lock_reason
-    };
-
     if (actions.comment) {
       core.debug('Commenting');
+      const lock = {
+        active: threadData.locked,
+        reason: threadData.active_lock_reason
+      };
       await this.#ensureUnlock(issue, lock, async () => {
         for (let commentBody of actions.comment) {
           commentBody = commentBody.replace(
