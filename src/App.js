@@ -12,6 +12,8 @@ class App {
   constructor(config) {
     this.config = config;
     this.client = github.getOctokit(config['github-token']);
+    this.owner = github.context.repo.owner;
+    this.repo = github.context.repo.repo;
   }
 
   async performActions() {
@@ -33,9 +35,11 @@ class App {
     }
 
     const threadData = payload.issue || payload.pull_request;
-    // TODO: Use `github.context.issue`
-    const { owner, repo } = github.context.repo;
-    const issue = { owner, repo, issue_number: threadData.number };
+    const issue = {
+      owner: this.owner,
+      repo: this.repo,
+      issue_number: threadData.number
+    };
 
     const lock = {
       active: threadData.locked,
@@ -207,11 +211,10 @@ class App {
   }
 
   async #addReviewers(reviewers) {
-    const { owner, repo, number: pull_number } = github.context.issue;
     await this.client.rest.pulls.requestReviewers({
-      owner,
-      repo,
-      pull_number,
+      owner: this.owner,
+      repo: this.repo,
+      pull_number: github.context.issue.number,
       reviewers
     });
   }
