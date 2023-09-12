@@ -17,7 +17,7 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "build": "ncc build src/index.js -o dist",
+    "build": "ncc build src/index.js --license licenses.txt",
     "format:write": "prettier --write src",
     "format:check": "prettier --check src",
     "release": "standard-version",
