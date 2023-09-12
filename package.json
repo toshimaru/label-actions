@@ -18,8 +18,8 @@
   "main": "src/index.js",
   "scripts": {
     "build": "ncc build src/index.js -o dist",
-    "lint": "prettier -c src",
-    "lint-fix": "prettier -w src",
+    "format:write": "prettier --write src",
+    "format:check": "prettier --check src",
     "release": "standard-version",
     "test": "jest"
   },
