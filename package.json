@@ -17,9 +17,9 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "build": "ncc build src/index.js -o dist",
-    "lint": "prettier -c src",
-    "lint-fix": "prettier -w src",
+    "build": "ncc build src/index.js --license licenses.txt",
+    "format:write": "prettier --write src",
+    "format:check": "prettier --check src",
     "release": "standard-version",
     "test": "jest"
   },
@@ -37,7 +37,7 @@
     "standard-version": "^9.5.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20"
   },
   "keywords": [
     "github",
