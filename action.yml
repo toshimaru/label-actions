@@ -1,6 +1,7 @@
 name: 'Label to Actions'
 description: 'Perform actions when issues or pull requests are labeled or unlabeled'
-author: 'Armin Sebastian'
+author: 'Armin Sebastian & Toshimaru'
+
 inputs:
   github-token:
     description: 'GitHub access token'
@@ -11,9 +12,11 @@ inputs:
   process-only:
     description: 'Process label events only for issues or pull requests, value must be either `issues` or `prs`'
     default: ''
+
 runs:
   using: node20
-  main: 'dist/index.js'
+  main: dist/index.js
+
 branding:
   icon: 'tag'
   color: 'purple'
