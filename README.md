@@ -5,6 +5,8 @@
 Label Actions is a GitHub bot that performs certain actions when issues
 or pull requests are labeled or unlabeled.
 
+![Label Actions Demo Image](https://user-images.githubusercontent.com/803398/278906086-960a1c6b-1db7-4539-a01f-11d976ede386.png)
+
 ## How It Works
 
 The bot performs certain actions when an issue or pull request
@@ -80,6 +82,9 @@ or pull requests by grouping them under the `issues` or `prs` key.
 - **`unlock`**
   - Unlock threads, value must be either `true` or `false`
   - Optional, defaults to `false`
+- **`reviewers`**
+  - Assign reviewers, value must be a list of reviewers
+  - Optional, defaults to `[]`
 
 ## Examples
 
@@ -105,7 +110,7 @@ jobs:
   job:
     runs-on: ubuntu-latest
     steps:
-      - uses: toshimaru/label-actions@v1.2.0
+      - uses: toshimaru/label-actions@v1.3.0
 ```
 
 ### Available input parameters
@@ -126,7 +131,6 @@ and their default values. Any of the parameters can be omitted.
 
 This step will process label events only for issues.
 
-<!-- prettier-ignore -->
 ```yaml
     steps:
       - uses: toshimaru/label-actions
@@ -136,7 +140,6 @@ This step will process label events only for issues.
 
 This step will process label events only for pull requests.
 
-<!-- prettier-ignore -->
 ```yaml
     steps:
       - uses: toshimaru/label-actions
@@ -239,7 +242,6 @@ enabled, and add the token as an [encrypted secret](https://docs.github.com/en/a
 for the repository or organization, then provide the action with the secret
 using the `github-token` input parameter.
 
-<!-- prettier-ignore -->
 ```yaml
     steps:
       - uses: toshimaru/label-actions
