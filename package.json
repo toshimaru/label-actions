@@ -6,6 +6,7 @@
   "contributors": [
     "Toshimaru"
   ],
+  "private": true,
   "license": "MIT",
   "homepage": "https://github.com/toshimaru/label-actions",
   "repository": {
@@ -15,7 +16,29 @@
   "bugs": {
     "url": "https://github.com/toshimaru/label-actions/issues"
   },
-  "main": "src/index.js",
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "JavaScript",
+    "issues",
+    "pull requests",
+    "github labels",
+    "comment",
+    "close",
+    "lock",
+    "label issues",
+    "close issues",
+    "lock issues",
+    "comment",
+    "automation",
+    "project management"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "ncc build src/index.js --license licenses.txt",
     "format:write": "prettier --write src",
@@ -35,26 +58,5 @@
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "standard-version": "^9.5.0"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "keywords": [
-    "github",
-    "issues",
-    "pull requests",
-    "github labels",
-    "comment",
-    "close",
-    "lock",
-    "label issues",
-    "close issues",
-    "lock issues",
-    "comment",
-    "automation",
-    "github actions",
-    "project management",
-    "bot"
-  ],
-  "private": true
+  }
 }
