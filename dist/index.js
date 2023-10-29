@@ -13282,7 +13282,20 @@ module.exports = exports = internals.Template = class {
         this.rendered = source;
 
         this._template = null;
-        this._settings = Clone(options);
+
+        if (options) {
+            const { functions, ...opts } = options;
+            this._settings = Object.keys(opts).length ? Clone(opts) : undefined;
+            this._functions = functions;
+            if (this._functions) {
+                Assert(Object.keys(this._functions).every((key) => typeof key === 'string'), 'Functions keys must be strings');
+                Assert(Object.values(this._functions).every((key) => typeof key === 'function'), 'Functions values must be functions');
+            }
+        }
+        else {
+            this._settings = undefined;
+            this._functions = undefined;
+        }
 
         this._parse();
     }
@@ -13367,12 +13380,16 @@ module.exports = exports = internals.Template = class {
             desc.options = this._settings;
         }
 
+        if (this._functions) {
+            desc.functions = this._functions;
+        }
+
         return desc;
     }
 
     static build(desc) {
 
-        return new internals.Template(desc.template, desc.options);
+        return new internals.Template(desc.template, desc.options || desc.functions ? { ...desc.options, functions: desc.functions } : undefined);
     }
 
     isDynamic() {
@@ -13452,11 +13469,16 @@ module.exports = exports = internals.Template = class {
 
             const ref = Ref.create(variable, this._settings);
             refs.push(ref);
-            return (context) => ref.resolve(...context);
+            return (context) => {
+
+                const resolved = ref.resolve(...context);
+                return resolved !== undefined ? resolved : null;
+            };
         };
 
         try {
-            var formula = new Formula.Parser(content, { reference, functions: internals.functions, constants: internals.constants });
+            const functions = this._functions ? { ...internals.functions, ...this._functions } : internals.functions;
+            var formula = new Formula.Parser(content, { reference, functions, constants: internals.constants });
         }
         catch (err) {
             err.message = `Invalid template variable "${content}" fails due to: ${err.message}`;
@@ -46462,7 +46484,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.10.1","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
+module.exports = JSON.parse('{"name":"joi","description":"Object schema validation","version":"17.11.0","repository":"git://github.com/hapijs/joi","main":"lib/index.js","types":"lib/index.d.ts","browser":"dist/joi-browser.min.js","files":["lib/**/*","dist/*"],"keywords":["schema","validation"],"dependencies":{"@hapi/hoek":"^9.0.0","@hapi/topo":"^5.0.0","@sideway/address":"^4.1.3","@sideway/formula":"^3.0.1","@sideway/pinpoint":"^2.0.0"},"devDependencies":{"@hapi/bourne":"2.x.x","@hapi/code":"8.x.x","@hapi/joi-legacy-test":"npm:@hapi/joi@15.x.x","@hapi/lab":"^25.0.1","@types/node":"^14.18.24","typescript":"4.3.x"},"scripts":{"prepublishOnly":"cd browser && npm install && npm run build","test":"lab -t 100 -a @hapi/code -L -Y","test-cov-html":"lab -r html -o coverage.html -a @hapi/code"},"license":"BSD-3-Clause"}');
 
 /***/ }),
 
